@@ -76,12 +76,7 @@ const LuxoraaApp: React.FC = () => {
     });
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
-      <Command size={60} className="text-white animate-pulse mb-8" />
-      <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase">Initializing Matrix...</h1>
-    </div>
-  );
+  // Removed the "Initializing Matrix..." loading animation block to satisfy user request.
 
   return (
     <div className="min-h-screen bg-[#fcfcfd] flex flex-col selection:bg-rose-600/10">
