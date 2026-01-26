@@ -127,25 +127,23 @@ const LuxoraaApp: React.FC = () => {
 
   const cartTotal = cartWithProducts.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
-  // Protected Route Logic
+  // Auto-redirect to Dashboards if logged in and on home
   useEffect(() => {
     if (loading) return;
     if (isAuthenticated) {
       if (user?.role === 'admin' && activePage === 'home') setActivePage('admin');
       if (user?.role === 'seller' && activePage === 'home') setActivePage('seller');
     }
-  }, [isAuthenticated, user?.role, loading]);
+  }, [isAuthenticated, user?.role, loading, activePage]);
 
-  // AI Curation Hook
+  // AI Curation Hook - Works for guests too
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'customer' && activePage === 'home') {
-      const fetchCuration = async () => {
-        const recs = await getSmartRecommendations("luxury urban minimalist aesthetic", MOCK_PRODUCTS);
-        setAiRecommendations(recs);
-      };
-      fetchCuration();
-    }
-  }, [isAuthenticated, user, activePage]);
+    const fetchCuration = async () => {
+      const recs = await getSmartRecommendations("luxury urban minimalist aesthetic", MOCK_PRODUCTS);
+      setAiRecommendations(recs);
+    };
+    fetchCuration();
+  }, [isAuthenticated, activePage]);
 
   const handleAddToCart = (productId: string, size?: string, color?: string) => {
     setCart(prev => {
@@ -178,12 +176,9 @@ const LuxoraaApp: React.FC = () => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={(u) => useAuth().login(u)} />;
-  }
-
   // --- OPERATIONS LAYOUT (Admin / Seller) ---
-  if (user?.role === 'admin' || user?.role === 'seller') {
+  // Requires Authentication
+  if (isAuthenticated && (user?.role === 'admin' || user?.role === 'seller')) {
     const isAdmin = user.role === 'admin';
     const accent = isAdmin ? 'rose' : 'emerald';
 
@@ -266,7 +261,13 @@ const LuxoraaApp: React.FC = () => {
     );
   }
 
-  // --- MARKETPLACE LAYOUT (Customer) ---
+  // Handle protected pages for guests
+  const isProtectedPage = ['profile', 'orders', 'admin', 'seller'].includes(activePage);
+  if (isProtectedPage && !isAuthenticated) {
+    return <LoginPage onLogin={(u) => { useAuth().login(u); setActivePage('home'); }} />;
+  }
+
+  // --- MARKETPLACE LAYOUT (Customer / Guest) ---
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col selection:bg-indigo-600/20">
       <Toaster message={toast?.message || null} type={toast?.type || 'info'} onClose={() => setToast(null)} />
@@ -309,9 +310,9 @@ const LuxoraaApp: React.FC = () => {
                 <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-3xl relative overflow-hidden group">
                    <div className="absolute top-0 right-0 p-10 opacity-5 text-indigo-600 group-hover:scale-110 transition-transform"><Trophy size={140} /></div>
                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-12">User Identity</h4>
-                   <p className="text-5xl font-display italic font-black text-slate-900 mb-2">{user?.tier}</p>
-                   <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden mb-6 shadow-inner"><div className="h-full bg-indigo-600 rounded-full" style={{ width: '65%' }} /></div>
-                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} className="text-amber-400" /> {user?.points} Lux Credits</p>
+                   <p className="text-5xl font-display italic font-black text-slate-900 mb-2">{isAuthenticated ? user?.tier : 'Guest Visitor'}</p>
+                   <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden mb-6 shadow-inner"><div className="h-full bg-indigo-600 rounded-full" style={{ width: isAuthenticated ? '65%' : '0%' }} /></div>
+                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} className="text-amber-400" /> {isAuthenticated ? `${user?.points} Lux Credits` : 'Login to earn rewards'}</p>
                 </div>
 
                 <div className="space-y-8">
@@ -414,6 +415,46 @@ const LuxoraaApp: React.FC = () => {
           </div>
         )}
         {activePage === 'checkout' && <CheckoutView total={cartTotal} items={cartWithProducts} onBack={() => setActivePage('home')} onPlaceOrder={() => {}} />}
+        
+        {/* Profile/Auth handled by conditional return above main layout return */}
+        {activePage === 'profile' && isAuthenticated && (
+          <div className="max-w-5xl mx-auto py-20 animate-in">
+             <div className="bg-white rounded-[80px] p-20 shadow-3xl border border-slate-100 flex flex-col md:flex-row items-center gap-20 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-24 opacity-5 text-indigo-600 group-hover:rotate-12 transition-transform duration-1000"><Sparkles size={300} /></div>
+                <div className="w-72 h-72 rounded-[64px] bg-slate-950 flex items-center justify-center text-white relative shadow-2xl">
+                  <UserIcon size={140} strokeWidth={1} />
+                  <div className="absolute -bottom-8 -right-8 bg-amber-400 text-slate-900 p-8 rounded-[40px] shadow-3xl border-[10px] border-white"><Trophy size={48} /></div>
+                </div>
+                <div className="flex-1 text-center md:text-left relative z-10">
+                  <div className="flex items-center gap-6 justify-center md:justify-start mb-6">
+                    <h1 className="text-7xl font-black text-slate-900 tracking-tighter">{user?.name}</h1>
+                    <span className="bg-indigo-600 text-white px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em]">Rank: {user?.tier}</span>
+                  </div>
+                  <p className="text-2xl text-slate-400 font-medium mb-16 uppercase tracking-[0.4em]">{user?.email}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                    <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100 shadow-sm"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] mb-6">Available Credits</p><p className="text-6xl font-black text-indigo-600 tracking-tighter">{user?.points}</p></div>
+                    <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100 shadow-sm"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] mb-6">Identity Wallet</p><p className="text-6xl font-black text-slate-950 tracking-tighter">${user?.walletBalance.toFixed(2)}</p></div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <button onClick={() => setActivePage('orders')} className="bg-white p-10 rounded-[48px] border border-slate-100 flex justify-between items-center group hover:bg-slate-950 hover:text-white transition-all shadow-lg hover:shadow-2xl">
+                   <div className="flex items-center gap-8">
+                     <div className="p-5 bg-indigo-50 text-indigo-600 rounded-[28px] group-hover:bg-white/10 group-hover:text-white transition-colors"><Clock size={32} /></div>
+                     <span className="text-2xl font-black tracking-tight">Access Logbook</span>
+                   </div>
+                   <ChevronRight className="group-hover:translate-x-3 transition-transform" size={32} />
+                 </button>
+                 <button onClick={logout} className="bg-rose-50 p-10 rounded-[48px] border border-rose-100 flex justify-between items-center group hover:bg-rose-600 hover:text-white transition-all shadow-lg">
+                   <div className="flex items-center gap-8">
+                     <div className="p-5 bg-white rounded-[28px] text-rose-600 group-hover:bg-white/20 group-hover:text-white transition-colors"><LogOut size={32} /></div>
+                     <span className="text-2xl font-black tracking-tight text-rose-600 group-hover:text-white">Close Session</span>
+                   </div>
+                   <ChevronRight />
+                 </button>
+              </div>
+          </div>
+        )}
       </main>
 
       {user?.role === 'customer' && <AIHelpDesk />}
@@ -429,7 +470,7 @@ const LuxoraaApp: React.FC = () => {
             <ul className="space-y-10 text-sm font-black uppercase tracking-[0.3em] text-white/50">
               <li className="hover:text-white cursor-pointer transition-all flex items-center gap-4" onClick={() => setActivePage('home')}>Marketplace</li>
               <li className="hover:text-white cursor-pointer transition-all flex items-center gap-4" onClick={() => setActivePage('profile')}>Identity Hub</li>
-              <li className="hover:text-rose-500 cursor-pointer transition-all flex items-center gap-4" onClick={logout}>De-Authenticate</li>
+              {isAuthenticated && <li className="hover:text-rose-500 cursor-pointer transition-all flex items-center gap-4" onClick={logout}>De-Authenticate</li>}
             </ul>
           </div>
           <div>

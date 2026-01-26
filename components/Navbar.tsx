@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Heart, User, Search, Menu, X, Sparkles, ShieldAlert, Store, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X, Sparkles, ShieldAlert, Store, ChevronDown, LogIn } from 'lucide-react';
 
 interface NavbarProps {
   cartCount: number;
@@ -15,6 +15,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
   const isAdmin = userRole === 'admin';
   const isSeller = userRole === 'seller';
   const isSpecialRole = isAdmin || isSeller;
+  const isAuthenticated = !!userRole;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -76,10 +77,12 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
           <div className="flex items-center gap-1 sm:gap-6">
             {!isSpecialRole ? (
               <>
-                <div className="hidden sm:flex items-center gap-2 bg-indigo-600/5 px-4 py-2 rounded-full border border-indigo-600/10">
-                  <Sparkles size={14} className="text-indigo-600" />
-                  <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">{userPoints} pts</span>
-                </div>
+                {isAuthenticated && (
+                  <div className="hidden sm:flex items-center gap-2 bg-indigo-600/5 px-4 py-2 rounded-full border border-indigo-600/10">
+                    <Sparkles size={14} className="text-indigo-600" />
+                    <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">{userPoints} pts</span>
+                  </div>
+                )}
                 <button onClick={() => onNavigate('wishlist')} className="p-2 text-slate-400 hover:text-rose-500 transition-all"><Heart size={20} /></button>
                 <button onClick={() => onNavigate('cart')} className="p-2 text-slate-400 hover:text-indigo-600 transition-all relative">
                   <ShoppingCart size={20} />
@@ -89,7 +92,12 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
                     </span>
                   )}
                 </button>
-                <button onClick={() => onNavigate('profile')} className="p-2 text-slate-400 hover:text-indigo-600 transition-all"><User size={20} /></button>
+                <button 
+                  onClick={() => onNavigate('profile')} 
+                  className={`flex items-center gap-2 p-2 rounded-full transition-all ${isAuthenticated ? 'text-slate-400 hover:text-indigo-600' : 'bg-slate-900 text-white px-4 hover:bg-indigo-600'}`}
+                >
+                  {isAuthenticated ? <User size={20} /> : <><LogIn size={18} /><span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Sign In</span></>}
+                </button>
               </>
             ) : (
               <button 
@@ -132,7 +140,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
             ))}
             <div className="pt-10 border-t border-slate-100 space-y-4">
               <button onClick={() => { onNavigate('profile'); setIsMobileMenuOpen(false); }} className="flex items-center gap-4 text-lg font-bold">
-                <User size={24} /> My Profile
+                <User size={24} /> {isAuthenticated ? 'My Profile' : 'Sign In'}
               </button>
               <button onClick={() => { onNavigate('wishlist'); setIsMobileMenuOpen(false); }} className="flex items-center gap-4 text-lg font-bold">
                 <Heart size={24} /> Wishlist
