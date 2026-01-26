@@ -5,14 +5,14 @@ export type Category =
   | 'Oversized Tees' | 'Classic T-Shirts' | 'Polos' | 'Shirts' 
   | 'Sweaters & Hoodies' | 'Joggers' | 'Shorts' | 'Boxers' | 'Pants' 
   | 'Dresses' | 'Tops' | 'Lounge Sets' | 'Socks' | 'Bags' | 'Accessories'
-  | 'Mobile Covers' | 'Footwear';
+  | 'Mobile Covers' | 'Footwear' | 'Toys' | 'Action Figures' | 'Statues' | 'Sneakers' | 'Sunglasses' | 'Watches';
 
 export type Theme = 
   | 'Marvel' | 'DC Comics' | 'Anime' | 'Disney' | 'Harry Potter' 
   | 'Star Wars' | 'Cartoon Network' | 'Friends' | 'Originals' | 'None';
 
 export type Collection = 
-  | 'New Arrivals' | 'Bestsellers' | 'Trending' | 'Minimal Edition' | 'Winter Collection';
+  | 'New Arrivals' | 'Bestsellers' | 'Trending' | 'Minimal Edition' | 'Winter Collection' | 'Elite Exclusive';
 
 export type LoyaltyTier = 'Member' | 'Silver' | 'Gold' | 'Platinum';
 
@@ -24,17 +24,6 @@ export interface AuditLog {
   action: string;
   timestamp: string;
   details: string;
-}
-
-export interface Seller {
-  id: string;
-  name: string;
-  rating: number;
-  joinedDate: string;
-  isVerified: boolean;
-  commissionRate: number;
-  totalSales: number;
-  balance: number;
 }
 
 export interface Product {

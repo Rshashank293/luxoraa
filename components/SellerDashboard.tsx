@@ -5,10 +5,12 @@ import {
   TrendingUp, Activity, Store, ArrowUpRight, Zap, Globe, MoreHorizontal,
   LayoutDashboard, ShoppingBag, CreditCard, ChevronRight
 } from 'lucide-react';
-import { Product, Order, Seller } from '../types';
+// Use User instead of Seller as it is not exported from types.ts
+import { Product, Order, User } from '../types';
 
 interface SellerDashboardProps {
-  seller: Seller;
+  // Updated from Seller to User
+  seller: User;
   products: Product[];
   orders: Order[];
 }
@@ -126,7 +128,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ seller, products, ord
         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden p-12 text-center text-slate-400 font-bold"><p>Merchant order processing terminal active. Waiting for new buyers...</p></div>
       )}
       {activeTab === 'finance' && (
-        <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-12"><div className="max-w-md mx-auto text-center"><DollarSign size={48} className="mx-auto text-emerald-500 mb-6" /><h4 className="text-2xl font-black text-slate-900 mb-2">Merchant Balance</h4><p className="text-4xl font-black text-emerald-600 mb-8">${seller.balance.toLocaleString()}</p><button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm hover:bg-emerald-600 transition-all">Withdraw Earnings</button></div></div>
+        <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-12"><div className="max-w-md mx-auto text-center"><DollarSign size={48} className="mx-auto text-emerald-500 mb-6" /><h4 className="text-2xl font-black text-slate-900 mb-2">Merchant Balance</h4><p className="text-4xl font-black text-emerald-600 mb-8">${seller.walletBalance.toLocaleString()}</p><button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm hover:bg-emerald-600 transition-all">Withdraw Earnings</button></div></div>
       )}
     </div>
   );
