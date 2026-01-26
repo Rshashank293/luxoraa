@@ -1,9 +1,30 @@
 
-export type Category = 'Classic T-Shirts' | 'Oversized Tees' | 'Hoodies & Sweatshirts' | 'Joggers & Pajamas' | 'Shoes' | 'Accessories';
+export type Gender = 'Men' | 'Women' | 'Kids' | 'Unisex';
+
+export type Category = 
+  | 'Oversized Tees' | 'Classic T-Shirts' | 'Polos' | 'Shirts' 
+  | 'Sweaters & Hoodies' | 'Joggers' | 'Shorts' | 'Boxers' | 'Pants' 
+  | 'Dresses' | 'Tops' | 'Lounge Sets' | 'Socks' | 'Bags' | 'Accessories'
+  | 'Mobile Covers' | 'Footwear';
+
+export type Theme = 
+  | 'Marvel' | 'DC Comics' | 'Anime' | 'Disney' | 'Harry Potter' 
+  | 'Star Wars' | 'Cartoon Network' | 'Friends' | 'Originals' | 'None';
+
+export type Collection = 
+  | 'New Arrivals' | 'Bestsellers' | 'Trending' | 'Minimal Edition' | 'Winter Collection';
 
 export type LoyaltyTier = 'Member' | 'Silver' | 'Gold' | 'Platinum';
 
 export type UserStatus = 'Active' | 'Suspended' | 'Pending Verification';
+
+export interface AuditLog {
+  id: string;
+  actorId: string;
+  action: string;
+  timestamp: string;
+  details: string;
+}
 
 export interface Seller {
   id: string;
@@ -16,24 +37,16 @@ export interface Seller {
   balance: number;
 }
 
-export interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  date: string;
-  sentiment?: 'Positive' | 'Neutral' | 'Negative';
-}
-
 export interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
-  membershipPrice?: number; // TSS specific
+  membershipPrice?: number;
   category: Category;
-  collectionName?: string; // e.g., "Marvel", "Naruto"
+  gender: Gender;
+  theme: Theme;
+  collection: Collection[];
   images: string[];
   stock: number;
   rating: number;
@@ -43,9 +56,6 @@ export interface Product {
   sizes?: string[];
   material?: string;
   sellerId: string;
-  seller?: Seller;
-  aiDescription?: string;
-  dynamicPrice?: number;
 }
 
 export interface CartItem {
@@ -63,14 +73,12 @@ export interface User {
   avatar?: string;
   points: number;
   tier: LoyaltyTier;
-  isMember: boolean; // TSS specific
+  isMember: boolean;
   walletBalance: number;
   status: UserStatus;
   lastLogin: string;
   mfaEnabled: boolean;
 }
-
-export type OrderStatus = 'Placed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Returned';
 
 export interface ShippingAddress {
   fullName: string;
@@ -78,7 +86,6 @@ export interface ShippingAddress {
   city: string;
   zipCode: string;
   phone: string;
-  latLng?: { lat: number; lng: number };
 }
 
 export interface Order {
@@ -86,30 +93,10 @@ export interface Order {
   userId: string;
   items: CartItem[];
   totalAmount: number;
-  status: OrderStatus;
+  status: 'Placed' | 'Packed' | 'Shipped' | 'Delivered' | 'Returned';
   date: string;
   trackingNumber: string;
   paymentMethod: string;
   shippingAddress: ShippingAddress;
   fraudScore: number;
-  isAIGeneratedRecovery?: boolean;
-}
-
-export interface AuditLog {
-  id: string;
-  actorId: string;
-  actorName: string;
-  action: string;
-  target: string;
-  details: string;
-  timestamp: string;
-  severity: 'Info' | 'Warning' | 'Critical';
-}
-
-export interface AnalyticsData {
-  salesVolume: number[];
-  labels: string[];
-  roi: number;
-  cac: number;
-  churnRate: number;
 }

@@ -1,293 +1,314 @@
 
 import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { MOCK_PRODUCTS } from './constants';
-import { Product, CartItem, Order, ShippingAddress, User, Seller } from './types';
+import { Product, CartItem, Order, ShippingAddress, User, Gender, Theme, Category } from './types';
 import Navbar from './components/Navbar';
 import ProductCard from './components/ProductCard';
 import ProductDetail from './components/ProductDetail';
 import CheckoutView from './components/CheckoutView';
 import AIHelpDesk from './components/AIHelpDesk';
 import AdminDashboard from './components/AdminDashboard';
-import SellerDashboard from './components/SellerDashboard';
-import LoginPage from './components/LoginPage';
-import { 
-  Sparkles, Package, ChevronRight, ChevronLeft, ArrowRight, Zap, Trophy, Clock, 
-  Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, 
-  ShieldAlert, Settings, LogOut, Store, ArrowDown, ShieldCheck, 
-  LayoutDashboard, Bell, Globe, Fingerprint, Activity, Menu, X, Terminal,
-  CreditCard, BarChart4, Users, Layers, Command, MousePointer2
-} from 'lucide-react';
+import { Sparkles, Command, ArrowRight, ArrowDown, Zap, Trophy, ShoppingBag, Fingerprint, Globe, ShieldCheck, Star, Package, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { getSmartSearch, getSmartRecommendations } from './services/geminiService';
 
-// --- PRODUCTION AUTH SYSTEM ---
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (user: User) => void;
-  logout: () => void;
-  loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+// --- AUTH CONTEXT ---
+const AuthContext = createContext<any>(null);
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifySession = () => {
-      const savedSession = localStorage.getItem('lux_session_token');
-      if (savedSession) {
-        try {
-          const decoded = JSON.parse(savedSession);
-          setUser(decoded);
-          setIsAuthenticated(true);
-        } catch (e) {
-          localStorage.removeItem('lux_session_token');
-        }
-      }
-      setLoading(false);
-    };
-    setTimeout(verifySession, 2000); 
+    const saved = localStorage.getItem('lux_session_token');
+    if (saved) { setUser(JSON.parse(saved)); setIsAuthenticated(true); }
+    setTimeout(() => setLoading(false), 2000);
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('lux_session_token', JSON.stringify(userData));
-  };
+  const login = (u: User) => { setUser(u); setIsAuthenticated(true); localStorage.setItem('lux_session_token', JSON.stringify(u)); };
+  const logout = () => { setUser(null); setIsAuthenticated(false); localStorage.removeItem('lux_session_token'); };
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('lux_session_token');
-    window.location.hash = ''; 
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, isAuthenticated, login, logout, loading }}>{children}</AuthContext.Provider>;
 };
 
-const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
-};
+const useAuth = () => useContext(AuthContext);
 
-// --- GLOBAL NOTIFICATION SYSTEM ---
-const Toaster: React.FC<{ message: string | null; type: 'success' | 'error' | 'info'; onClose: () => void }> = ({ message, type, onClose }) => {
-  if (!message) return null;
-  const colors = {
-    success: 'bg-emerald-600 text-white',
-    error: 'bg-rose-600 text-white',
-    info: 'bg-indigo-600 text-white'
-  };
-  return (
-    <div className={`fixed bottom-12 left-1/2 -translate-x-1/2 z-[300] px-8 py-5 rounded-[32px] shadow-2xl flex items-center gap-6 animate-reveal ${colors[type]}`}>
-      <p className="font-black text-xs uppercase tracking-[0.2em]">{message}</p>
-      <button onClick={onClose} className="opacity-40 hover:opacity-100"><X size={16} /></button>
-    </div>
-  );
-};
-
-// --- MAIN APPLICATION NODE ---
+// --- MAIN APP ---
 const LuxoraaApp: React.FC = () => {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [activePage, setActivePage] = useState<string>('home');
+  const [filters, setFilters] = useState<{ gender?: Gender; category?: Category; theme?: Theme }>({});
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [aiRecommendations, setAiRecommendations] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('lux_cart');
-    if (savedCart) setCart(JSON.parse(savedCart));
-  }, []);
+    let result = MOCK_PRODUCTS;
+    if (filters.gender) result = result.filter(p => p.gender === filters.gender || p.gender === 'Unisex');
+    if (filters.category) result = result.filter(p => p.category === filters.category);
+    if (filters.theme) result = result.filter(p => p.theme === filters.theme);
+    if (searchQuery) result = result.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())));
+    setFilteredProducts(result);
+  }, [filters, searchQuery]);
 
-  useEffect(() => {
-    localStorage.setItem('lux_cart', JSON.stringify(cart));
-  }, [cart]);
+  const handleNavigate = (page: string, gender?: string, category?: string, theme?: string) => {
+    setActivePage(page);
+    setFilters({ gender: gender as Gender, category: category as Category, theme: theme as Theme });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  const cartWithProducts = useMemo(() => {
-    return cart.map(item => ({
-      ...item,
-      product: MOCK_PRODUCTS.find(p => p.id === item.productId)!
-    }));
-  }, [cart]);
-
-  const cartTotal = cartWithProducts.reduce((sum, item) => {
-    const price = (user?.isMember && item.product.membershipPrice) ? item.product.membershipPrice : item.product.price;
-    return sum + (price * item.quantity);
-  }, 0);
-
-  useEffect(() => {
-    if (loading) return;
-    if (isAuthenticated) {
-      if (user?.role === 'admin' && activePage === 'home') setActivePage('admin');
-      if (user?.role === 'seller' && activePage === 'home') setActivePage('seller');
-    }
-  }, [isAuthenticated, user?.role, loading, activePage]);
-
-  useEffect(() => {
-    const fetchCuration = async () => {
-      const recs = await getSmartRecommendations("pop culture marvel anime hoodies shirts official merch", MOCK_PRODUCTS);
-      setAiRecommendations(recs);
-    };
-    fetchCuration();
-  }, [isAuthenticated, activePage]);
-
-  const handleAddToCart = (productId: string) => {
+  const handleAddToCart = (id: string, size?: string) => {
     setCart(prev => {
-      const existing = prev.find(item => item.productId === productId);
-      if (existing) {
-        return prev.map(item => (item.productId === productId) ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { productId, quantity: 1 }];
+      const existing = prev.find(i => i.productId === id && i.selectedSize === size);
+      if (existing) return prev.map(i => (i.productId === id && i.selectedSize === size) ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { productId: id, quantity: 1, selectedSize: size }];
     });
-    setToast({ message: 'Artifact Linked to Identity', type: 'success' });
-    setTimeout(() => setToast(null), 3000);
   };
 
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    if (query.length > 2) {
-      const results = await getSmartSearch(query, MOCK_PRODUCTS);
-      setFilteredProducts(results);
-    } else {
-      setFilteredProducts(MOCK_PRODUCTS);
-    }
-  };
-
-  const categories = [
-    { name: 'Oversized Tees', image: 'https://images.unsplash.com/photo-1576871333020-2219d51cca94?auto=format&fit=crop&q=80&w=1200', color: 'bg-rose-600', count: MOCK_PRODUCTS.filter(p => p.category === 'Oversized Tees').length },
-    { name: 'Classic T-Shirts', image: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&q=80&w=1200', color: 'bg-indigo-600', count: MOCK_PRODUCTS.filter(p => p.category === 'Classic T-Shirts').length },
-    { name: 'Hoodies & Sweatshirts', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=1200', color: 'bg-emerald-600', count: MOCK_PRODUCTS.filter(p => p.category === 'Hoodies & Sweatshirts').length },
-    { name: 'Joggers & Pajamas', image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=1200', color: 'bg-amber-500', count: MOCK_PRODUCTS.filter(p => p.category === 'Joggers & Pajamas').length },
-  ];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="relative z-10 flex flex-col items-center gap-12">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            <div className="absolute inset-0 border-[1px] border-white/5 rounded-3xl animate-[spin_8s_linear_infinite]" />
-            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)] animate-reveal">
-              <Command size={40} className="text-slate-950" />
-            </div>
-          </div>
-          <div className="flex flex-col items-center">
-            <h1 className="text-6xl font-display italic font-black text-white tracking-[-0.05em] uppercase">
-              LUXORAA
-            </h1>
-            <span className="text-[10px] font-black uppercase tracking-[1em] text-white/30 mt-4">Official Fandom Hub</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+      <Command size={60} className="text-white animate-pulse mb-8" />
+      <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase">Initializing Matrix...</h1>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#fcfcfd] flex flex-col selection:bg-rose-600/10 hero-gradient">
-      <Toaster message={toast?.message || null} type={toast?.type || 'info'} onClose={() => setToast(null)} />
-      <Navbar cartCount={cart.reduce((s, i) => s + i.quantity, 0)} userPoints={user?.points || 0} onNavigate={setActivePage} onSearch={handleSearch} userRole={user?.role} />
+    <div className="min-h-screen bg-[#fcfcfd] flex flex-col selection:bg-rose-600/10">
+      <Navbar 
+        cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
+        userPoints={user?.points || 0} 
+        onNavigate={handleNavigate} 
+        onSearch={q => setSearchQuery(q)} 
+        userRole={user?.role} 
+      />
       
-      <main className="flex-1 pt-40 w-full animate-reveal">
+      <main className="flex-1 pt-40">
         {activePage === 'home' && (
-          <div className="pb-40 space-y-48">
-            <div className="max-w-7xl mx-auto px-6">
-              <section className="relative h-[85vh] rounded-[80px] overflow-hidden shadow-[0_120px_200px_-60px_rgba(0,0,0,0.3)] group bg-slate-950">
-                <img src="https://images.unsplash.com/photo-1576871333020-2219d51cca94?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover transition-transform duration-[15s] group-hover:scale-105 opacity-50 blur-[2px] group-hover:blur-0" alt="Fandom Scene" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex items-end justify-start p-16 sm:p-24">
-                  <div className="max-w-5xl space-y-16 animate-reveal">
-                      <div className="flex items-center gap-4">
-                        <span className="bg-rose-600 text-white text-[9px] font-black px-10 py-4 rounded-full uppercase tracking-[0.5em] shadow-2xl">Official Merchandise</span>
-                      </div>
-                      <h2 className="text-[12rem] font-display italic text-white leading-[0.7] tracking-tighter">Wear Your <br/> <span className="opacity-30 font-sans tracking-tight not-italic">Fandom.</span></h2>
-                      <div className="flex flex-col sm:flex-row gap-12 items-start sm:items-center">
-                        <p className="text-3xl text-white/50 max-w-lg font-medium leading-relaxed italic font-display">
-                          Decentralized pop-culture artifacts for the modern vanguard.
-                        </p>
-                        <button onClick={() => window.scrollTo({ top: 1000, behavior: 'smooth' })} className="bg-white text-slate-950 px-20 py-10 rounded-[48px] font-black text-2xl hover:bg-rose-600 hover:text-white transition-all shadow-3xl flex items-center gap-8 group/btn hover:scale-105 active:scale-95">
-                          Explore Shards <ArrowDown className="group-hover/btn:translate-y-2 transition-transform" />
-                        </button>
-                      </div>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            {/* Fandom Nodes (Categories) */}
+          <div className="space-y-48 pb-40">
+            {/* TSS STYLE HERO CAROUSEL */}
             <section className="max-w-7xl mx-auto px-6">
-              <div className="flex flex-col sm:flex-row items-end justify-between mb-24 gap-8">
-                <div>
-                  <h3 className="text-7xl font-display italic font-black tracking-tighter text-slate-950 uppercase mb-4">Nodes.</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Departmental Intelligence Nodes</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                {categories.map((cat, idx) => (
-                  <div key={cat.name} onClick={() => setSelectedCategory(cat.name)} className={`relative h-[550px] rounded-[64px] overflow-hidden group shadow-[0_40px_100px_-30px_rgba(0,0,0,0.1)] hover:scale-[1.03] transition-all duration-700 cursor-pointer animate-reveal stagger-${idx+1}`}>
-                    <img src={cat.image} className="w-full h-full object-cover opacity-100 group-hover:opacity-90 transition-all" alt={cat.name} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent" />
-                    <div className="absolute inset-0 p-12 flex flex-col justify-end items-start text-white">
-                      <div className={`px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest mb-6 ${cat.color} shadow-2xl`}>{cat.count} Artifacts</div>
-                      <h4 className="text-5xl font-display italic font-black mb-4 tracking-tighter">{cat.name}.</h4>
-                      <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all">Synchronise <ArrowRight className="inline ml-2" size={14} /></p>
+              <div className="relative h-[85vh] rounded-[80px] overflow-hidden bg-slate-950 group shadow-3xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1576871333020-2219d51cca94?auto=format&fit=crop&q=80&w=2000" 
+                  className="w-full h-full object-cover opacity-60 transition-transform duration-[20s] group-hover:scale-110"
+                  alt="Hero"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-24 text-white">
+                  <div className="max-w-5xl space-y-12 animate-reveal">
+                    <div className="flex items-center gap-4">
+                       <span className="px-8 py-3 bg-rose-600 rounded-full text-[10px] font-black uppercase tracking-[0.5em] shadow-2xl">Official Licensing Partner</span>
+                       <div className="w-12 h-[1px] bg-white/20" />
+                       <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Drop 042 / 2025</span>
+                    </div>
+                    <h2 className="text-[12rem] font-display italic font-black leading-[0.7] tracking-tighter">Wear Your <br/> <span className="opacity-30 font-sans tracking-tight not-italic">Fandom.</span></h2>
+                    <div className="flex items-center gap-16">
+                       <p className="text-3xl text-white/50 max-w-lg italic font-display leading-relaxed">The ultimate collection of high-density pop culture shards.</p>
+                       <button onClick={() => handleNavigate('shop', 'Men', 'Oversized Tees')} className="bg-white text-slate-950 px-20 py-10 rounded-[48px] font-black text-2xl hover:bg-rose-600 hover:text-white transition-all shadow-4xl flex items-center gap-8 group/btn hover:scale-105">
+                          Explore Matrix <ArrowRight className="group-hover/btn:translate-x-4 transition-transform" size={28} />
+                       </button>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             </section>
 
-            {/* Artifact Grid */}
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="flex items-center justify-between mb-24">
-                <h2 className="text-7xl font-display italic font-black tracking-tighter text-slate-900 uppercase">
-                  {selectedCategory === 'All' ? 'Matrix.' : `${selectedCategory}.`}
-                </h2>
-                {user?.isMember && (
-                  <div className="bg-amber-400 text-slate-950 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                    <Trophy size={14} /> Membership Active: Exclusive Pricing Sync'd
+            {/* CATEGORY TILES */}
+            <section className="max-w-7xl mx-auto px-6">
+               <div className="flex items-end justify-between mb-24">
+                  <h3 className="text-8xl font-display italic font-black tracking-tighter uppercase leading-none">Nodes.</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] pb-2">Synchronize by Category</p>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                  <div onClick={() => handleNavigate('shop', 'Men')} className="relative h-[600px] rounded-[64px] overflow-hidden group cursor-pointer shadow-2xl">
+                     <img src="https://images.unsplash.com/photo-1491336477066-31156b5e4f35?auto=format&fit=crop&q=80&w=1200" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" />
+                     <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-all flex flex-col justify-end p-16 text-white">
+                        <h3 className="text-6xl font-display italic font-black tracking-tighter uppercase">Men.</h3>
+                        <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 flex items-center gap-3">Initialize Wardrobe <ArrowRight size={14} /></p>
+                     </div>
                   </div>
-                )}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
-                {filteredProducts.filter(p => selectedCategory === 'All' || p.category === selectedCategory).map(p => (
-                  <div key={p.id} className="relative group">
+                  <div onClick={() => handleNavigate('shop', 'Women')} className="relative h-[600px] rounded-[64px] overflow-hidden group cursor-pointer shadow-2xl">
+                     <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1200" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" />
+                     <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-all flex flex-col justify-end p-16 text-white">
+                        <h3 className="text-6xl font-display italic font-black tracking-tighter uppercase">Women.</h3>
+                        <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 flex items-center gap-3">Initialize Identity <ArrowRight size={14} /></p>
+                     </div>
+                  </div>
+                  <div onClick={() => handleNavigate('shop', 'Kids')} className="relative h-[600px] rounded-[64px] overflow-hidden group cursor-pointer shadow-2xl">
+                     <img src="https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&q=80&w=1200" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" />
+                     <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/40 transition-all flex flex-col justify-end p-16 text-white">
+                        <h3 className="text-6xl font-display italic font-black tracking-tighter uppercase">Kids.</h3>
+                        <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 flex items-center gap-3">Node Entry <ArrowRight size={14} /></p>
+                     </div>
+                  </div>
+               </div>
+            </section>
+
+            {/* LICENSING TILES (MARVEL, DC, ETC) */}
+            <section className="bg-slate-950 py-48 overflow-hidden">
+               <div className="max-w-7xl mx-auto px-6">
+                  <div className="flex justify-between items-end mb-24">
+                     <div>
+                        <h2 className="text-8xl font-display italic font-black text-white tracking-tighter uppercase leading-[0.8] mb-6">Cluster <br/> <span className="text-rose-600">Thematic.</span></h2>
+                        <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.8em]">Browse Official Licensed Shards</p>
+                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
+                     {['Marvel', 'DC Comics', 'Anime', 'Harry Potter'].map(theme => (
+                        <div key={theme} onClick={() => handleNavigate('shop', undefined, undefined, theme)} className="bg-white/5 border border-white/10 rounded-[56px] p-12 group hover:bg-white/10 transition-all cursor-pointer shadow-2xl">
+                           <div className="w-20 h-20 bg-rose-600 rounded-[28px] flex items-center justify-center text-white mb-10 group-hover:rotate-12 transition-transform">
+                              <Star fill="currentColor" size={32} />
+                           </div>
+                           <h4 className="text-3xl font-black text-white italic tracking-tighter mb-4 uppercase">{theme}</h4>
+                           <div className="w-12 h-[2px] bg-rose-600 rounded-full group-hover:w-full transition-all duration-700" />
+                           <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.5em] mt-10 flex items-center gap-2 group-hover:text-white transition-all">Explore Merchandise <ChevronRight size={14} /></p>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </section>
+
+            {/* BESTSELLERS CAROUSEL */}
+            <section className="max-w-7xl mx-auto px-6">
+               <div className="flex items-center justify-between mb-24">
+                  <div className="flex items-center gap-8">
+                     <div className="w-20 h-20 bg-slate-900 rounded-[32px] flex items-center justify-center text-white shadow-xl"><ShoppingBag size={32} /></div>
+                     <h2 className="text-8xl font-display italic font-black tracking-tighter uppercase leading-none">Bestsellers.</h2>
+                  </div>
+                  {user?.isMember && (
+                    <div className="bg-amber-400 text-slate-950 px-10 py-4 rounded-full text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl animate-reveal">
+                      <Trophy size={16} /> Exclusive Member Sync Active
+                    </div>
+                  )}
+               </div>
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+                  {MOCK_PRODUCTS.slice(0, 4).map(p => (
                     <ProductCard 
+                      key={p.id} 
                       product={p} 
                       onAddToCart={handleAddToCart} 
-                      onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} 
-                      onToggleWishlist={() => {}} 
-                      isWishlisted={false} 
+                      onViewDetails={id => { setSelectedProductId(id); setActivePage('product'); }} 
+                      onToggleWishlist={() => {}}
+                      isWishlisted={false}
                     />
-                    {p.collectionName && (
-                       <div className="absolute top-8 left-8 z-10">
-                          <span className="bg-slate-950/80 backdrop-blur-md text-white text-[8px] font-black px-4 py-2 rounded-full uppercase tracking-widest">{p.collectionName}</span>
-                       </div>
-                    )}
+                  ))}
+               </div>
+            </section>
+
+            {/* OFFER BANNERS */}
+            <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-10">
+               <div className="bg-rose-600 p-20 rounded-[80px] shadow-3xl text-white relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-20 opacity-10 group-hover:scale-125 transition-transform duration-1000"><Zap size={300} /></div>
+                  <div className="relative z-10">
+                     <span className="text-[10px] font-black uppercase tracking-[1em] opacity-60 mb-8 block">Limited Phase</span>
+                     <h3 className="text-7xl font-display italic font-black tracking-tighter leading-none mb-10">BOGO <br/> LIVE.</h3>
+                     <p className="text-2xl font-display italic opacity-60 mb-12">On all official Anime shards. Sync 2 for price of 1.</p>
+                     <button className="bg-white text-slate-950 px-12 py-5 rounded-[32px] font-black text-sm uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all">Claim Protocol</button>
                   </div>
-                ))}
-              </div>
+               </div>
+               <div className="bg-indigo-600 p-20 rounded-[80px] shadow-3xl text-white relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-20 opacity-10 group-hover:rotate-12 transition-transform duration-1000"><Trophy size={300} /></div>
+                  <div className="relative z-10">
+                     <span className="text-[10px] font-black uppercase tracking-[1em] opacity-60 mb-8 block">Member Exclusive</span>
+                     <h3 className="text-7xl font-display italic font-black tracking-tighter leading-none mb-10">FLAT <br/> 50% OFF.</h3>
+                     <p className="text-2xl font-display italic opacity-60 mb-12">For identity holders with 1000+ credits.</p>
+                     <button className="bg-white text-slate-950 px-12 py-5 rounded-[32px] font-black text-sm uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all">Access Matrix</button>
+                  </div>
+               </div>
+            </section>
+          </div>
+        )}
+
+        {activePage === 'shop' && (
+          <div className="max-w-7xl mx-auto px-6 pb-48 animate-reveal">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-12 mb-24">
+               <div>
+                  <h1 className="text-[10rem] font-display italic font-black tracking-tighter leading-none mb-6 uppercase text-slate-900">
+                    {filters.theme || filters.category || filters.gender || 'Matrix.'}
+                  </h1>
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-[1em] pl-2">Parsing {filteredProducts.length} Neural Matches</p>
+               </div>
+               <div className="flex gap-4 p-3 bg-white rounded-[32px] border border-slate-100 shadow-xl">
+                  <button className="px-8 py-3 bg-slate-950 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-2xl">Sort: Popular</button>
+                  <button className="px-8 py-3 hover:bg-slate-50 text-slate-500 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all">Filters</button>
+               </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+               {filteredProducts.map(p => (
+                  <ProductCard 
+                    key={p.id} 
+                    product={p} 
+                    onAddToCart={handleAddToCart} 
+                    onViewDetails={id => { setSelectedProductId(id); setActivePage('product'); }} 
+                    onToggleWishlist={() => {}}
+                    isWishlisted={false}
+                  />
+               ))}
             </div>
           </div>
         )}
+
+        {activePage === 'product' && selectedProductId && (
+          <ProductDetail 
+            product={MOCK_PRODUCTS.find(p => p.id === selectedProductId)!} 
+            onBack={() => setActivePage('home')} 
+            onAddToCart={handleAddToCart} 
+            onToggleWishlist={() => {}} 
+            onViewProduct={setSelectedProductId}
+            isWishlisted={false}
+          />
+        )}
         
-        {activePage === 'product' && selectedProductId && (<ProductDetail product={MOCK_PRODUCTS.find(p => p.id === selectedProductId)!} isWishlisted={wishlist.includes(selectedProductId)} onAddToCart={handleAddToCart} onBack={() => setActivePage('home')} onToggleWishlist={() => {}} onViewProduct={setSelectedProductId} />)}
-        {activePage === 'cart' && <div className="max-w-6xl mx-auto py-24 px-6"><h1 className="text-8xl font-display font-black italic mb-12">Bag.</h1>{/* Cart items logic here... */}</div>}
+        {activePage === 'admin' && user?.role === 'admin' && (
+          <div className="max-w-[1600px] mx-auto px-6">
+            <AdminDashboard products={MOCK_PRODUCTS} orders={[]} />
+          </div>
+        )}
       </main>
 
-      {user?.role === 'customer' && <AIHelpDesk />}
+      <footer className="bg-slate-950 text-white pt-80 pb-32 border-t border-white/5 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-48">
+            <div className="md:col-span-2 space-y-20">
+              <h2 className="text-[18rem] font-display italic font-black tracking-tighter text-rose-600 leading-[0.5] opacity-90">LUX.</h2>
+              <p className="text-5xl text-white/20 font-medium italic font-display leading-tight max-w-xl">A decentralized fandom matrix for the global vanguard.</p>
+              <div className="flex gap-8 pt-12">
+                 {['Instagram', 'Twitter', 'Node-Net', 'Matrix'].map(social => (
+                   <span key={social} className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 hover:text-white cursor-pointer transition-colors">{social}</span>
+                 ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[1em] text-white/20 mb-16">Nodes</h4>
+              <ul className="space-y-10 text-[11px] font-black uppercase tracking-[0.4em] text-white/40">
+                <li className="hover:text-white cursor-pointer transition-all" onClick={() => handleNavigate('shop', 'Men')}>Men's Shard</li>
+                <li className="hover:text-white cursor-pointer transition-all" onClick={() => handleNavigate('shop', 'Women')}>Women's Shard</li>
+                <li className="hover:text-white cursor-pointer transition-all" onClick={() => handleNavigate('shop', 'Kids')}>Kids' Cluster</li>
+                <li className="hover:text-white cursor-pointer transition-all">Mobile Matrix</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[1em] text-white/20 mb-16">Distribution</h4>
+              <ul className="space-y-10 text-[11px] font-black uppercase tracking-[0.4em] text-white/40">
+                <li className="hover:text-white cursor-pointer transition-all">Tracking Ledger</li>
+                <li className="hover:text-white cursor-pointer transition-all">Privacy protocol</li>
+                <li className="hover:text-white cursor-pointer transition-all">Identity Core</li>
+                <li className="hover:text-white cursor-pointer transition-all">Node Directory</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-80 pt-24 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-12 text-[10px] font-black uppercase tracking-[1.5em] text-white/10">
+             <span>&copy; 2025 LUXORAA GLOBAL SYSTEMS • IDENTITY SYNC'D</span>
+             <div className="flex items-center gap-12">
+                <div className="flex items-center gap-4"><Globe size={14} /> RSA-4096</div>
+                <div className="flex items-center gap-4"><ShieldCheck size={14} /> DECENTRALIZED</div>
+             </div>
+          </div>
+        </div>
+        {/* Abstract shapes for footer aesthetic */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-rose-600/5 rounded-full blur-[180px] -translate-y-1/2 translate-x-1/2" />
+      </footer>
+
+      {activePage !== 'admin' && <AIHelpDesk />}
     </div>
   );
 };

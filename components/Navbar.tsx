@@ -1,21 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Heart, User, Search, Menu, X, Sparkles, ShieldAlert, Store, LogIn, Command, LogOut, Settings } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X, Command, ChevronDown, Zap, Sparkles } from 'lucide-react';
 
 interface NavbarProps {
   cartCount: number;
   userPoints: number;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, gender?: string, category?: string, theme?: string) => void;
   onSearch: (query: string) => void;
   userRole?: string;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSearch, userRole }) => {
+const Navbar: React.FC<NavbarProps> = ({ cartCount, onNavigate, onSearch, userRole }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   
-  const isAdmin = userRole === 'admin';
   const isAuthenticated = !!userRole;
 
   useEffect(() => {
@@ -24,121 +23,108 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const menuStructure = {
+    Men: ['Oversized Tees', 'Classic T-Shirts', 'Polos', 'Shirts', 'Sweaters & Hoodies', 'Joggers', 'Shorts'],
+    Women: ['Dresses', 'Tops', 'Oversized Tees', 'Joggers', 'Shorts', 'Lounge Sets'],
+    Kids: ['Classic T-Shirts', 'Hoodies', 'Joggers', 'Sets'],
+    Themes: ['Marvel', 'DC Comics', 'Anime', 'Disney', 'Harry Potter', 'Star Wars', 'Friends']
+  };
+
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[110] bg-slate-950 text-white/40 text-[9px] py-1.5 text-center font-bold uppercase tracking-[0.6em]">
-        Curation node: Global / Identity v4.0.2
+      <div className="fixed top-0 left-0 right-0 z-[120] bg-rose-600 text-white text-[9px] py-1 text-center font-black uppercase tracking-[0.5em]">
+        Free Shipping on Orders Above ₹999 • BOGO LIVE ON ARTWORKS
       </div>
 
-      <nav className={`fixed top-8 left-0 right-0 z-[100] transition-all duration-700 px-6 sm:px-12 ${
-        isScrolled ? 'translate-y-0' : 'translate-y-4'
-      }`}>
-        <div className={`max-w-7xl mx-auto h-16 sm:h-20 flex justify-between items-center px-8 transition-all duration-500 rounded-[32px] ${
-          isScrolled ? 'glass shadow-2xl scale-[0.98]' : 'bg-transparent'
-        }`}>
-          {/* Brand Shard */}
-          <div className="flex items-center gap-12">
-            <div 
-              onClick={() => onNavigate('home')}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <div className="relative">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg group-hover:rotate-[15deg] transition-transform duration-500 flex items-center justify-center text-white">
-                  <Command size={16} />
-                </div>
-                {isAdmin && <div className="absolute -top-2 -right-2 w-4 h-4 bg-rose-500 rounded-full border-2 border-white" />}
+      <nav className={`fixed top-6 left-0 right-0 z-[110] transition-all duration-500 ${isScrolled ? 'translate-y-0' : 'translate-y-2'}`}>
+        <div className={`max-w-7xl mx-auto h-20 px-8 transition-all duration-500 rounded-b-[40px] flex justify-between items-center ${isScrolled ? 'glass shadow-2xl' : 'bg-transparent'}`}>
+          
+          <div className="flex items-center gap-10">
+            <div onClick={() => onNavigate('home')} className="flex items-center gap-3 cursor-pointer group">
+              <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white group-hover:rotate-12 transition-all">
+                <Command size={20} />
               </div>
-              <h1 className="text-xl font-black tracking-tighter italic uppercase group-hover:tracking-normal transition-all duration-700">LUXORAA</h1>
+              <h1 className="text-2xl font-black italic tracking-tighter uppercase">LUXORAA</h1>
             </div>
 
-            <div className="hidden xl:flex items-center gap-10">
-              {['Market', 'Journal', 'Vanguard'].map(item => (
-                <button 
-                  key={item} 
-                  className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-slate-900 transition-colors relative group"
+            <div className="hidden lg:flex items-center gap-8">
+              {Object.keys(menuStructure).map(section => (
+                <div 
+                  key={section}
+                  className="relative group"
+                  onMouseEnter={() => setActiveMegaMenu(section)}
+                  onMouseLeave={() => setActiveMegaMenu(null)}
                 >
-                  {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-slate-900 group-hover:w-full transition-all duration-500" />
-                </button>
+                  <button className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-950 transition-colors py-8">
+                    {section} <ChevronDown size={14} className="group-hover:rotate-180 transition-transform" />
+                  </button>
+                  
+                  {activeMegaMenu === section && (
+                    <div className="fixed top-[104px] left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] p-12 animate-reveal">
+                      <div className="max-w-7xl mx-auto grid grid-cols-4 gap-12">
+                        <div className="col-span-1 border-r border-slate-50">
+                           <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] mb-8">Categories</h4>
+                           <div className="flex flex-col gap-4">
+                              {menuStructure[section as keyof typeof menuStructure].map(cat => (
+                                <button 
+                                  key={cat}
+                                  onClick={() => { onNavigate('shop', section === 'Themes' ? undefined : section, section === 'Themes' ? undefined : cat, section === 'Themes' ? cat : undefined); setActiveMegaMenu(null); }}
+                                  className="text-sm font-black text-slate-900 hover:text-rose-600 transition-colors text-left flex items-center gap-2 group/item"
+                                >
+                                   {cat} <Sparkles size={12} className="opacity-0 group-hover/item:opacity-100 transition-all text-amber-500" />
+                                </button>
+                              ))}
+                           </div>
+                        </div>
+                        <div className="col-span-2 grid grid-cols-2 gap-8">
+                           <div className="bg-slate-50 p-8 rounded-[40px] flex flex-col justify-end group/banner cursor-pointer hover:bg-slate-100 transition-all">
+                              <span className="text-rose-600 font-black text-[9px] uppercase tracking-widest mb-2">Editor's Pick</span>
+                              <h5 className="text-3xl font-display italic font-black text-slate-950 tracking-tighter">Vanguard <br/> Collection.</h5>
+                           </div>
+                           <div className="bg-indigo-600 p-8 rounded-[40px] flex flex-col justify-end text-white group/banner cursor-pointer hover:bg-indigo-700 transition-all">
+                              <span className="font-black text-[9px] uppercase tracking-widest mb-2">Member Exclusive</span>
+                              <h5 className="text-3xl font-display italic font-black tracking-tighter">Identity <br/> Minimalist.</h5>
+                           </div>
+                        </div>
+                        <div className="col-span-1 flex flex-col justify-center gap-6">
+                           <div className="flex items-center gap-4 p-5 bg-amber-50 rounded-3xl border border-amber-100">
+                              <Zap className="text-amber-500" fill="currentColor" size={24} />
+                              <div>
+                                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">BOGO Live</p>
+                                <p className="text-xs font-bold text-slate-600">On all anime shards</p>
+                              </div>
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Search Engine Shard */}
-          <div className="hidden lg:flex flex-1 max-w-md mx-12">
-            <div className="relative w-full group">
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex relative group">
               <input
                 type="text"
-                placeholder="Query artifacts..."
-                className="w-full bg-slate-100/30 border border-slate-200/50 rounded-2xl py-2.5 pl-12 pr-4 focus:bg-white focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all text-xs font-semibold outline-none"
+                placeholder="Query fandoms..."
+                className="w-64 bg-slate-100/50 border border-transparent rounded-2xl py-2 px-6 pl-12 text-xs font-semibold focus:bg-white focus:border-slate-900 transition-all outline-none"
                 onChange={(e) => onSearch(e.target.value)}
               />
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-slate-900" size={16} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
             </div>
-          </div>
 
-          {/* Interaction Shard */}
-          <div className="flex items-center gap-2 sm:gap-4 relative">
-            <div className="hidden sm:flex items-center bg-slate-100/50 p-1.5 rounded-2xl gap-1">
-              <button onClick={() => onNavigate('wishlist')} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-white rounded-xl transition-all"><Heart size={18} /></button>
-              <button onClick={() => onNavigate('cart')} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all relative">
-                <ShoppingCart size={18} />
-                {cartCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-slate-950 text-white text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full">
-                    {cartCount}
-                  </span>
-                )}
+            <div className="flex items-center gap-4">
+              <button onClick={() => onNavigate('wishlist')} className="p-3 text-slate-400 hover:text-rose-600 transition-all relative group">
+                <Heart size={20} />
               </button>
-            </div>
-
-            {/* Profile / Identity Button (The "Person Logo") */}
-            <button 
-              onClick={() => onNavigate('profile')} 
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl group ${
-                isAuthenticated 
-                ? 'bg-slate-100 text-slate-900 hover:bg-slate-200' 
-                : 'bg-slate-900 text-white hover:bg-indigo-600 shadow-indigo-600/20'
-              }`}
-              onMouseEnter={() => setIsUserMenuOpen(true)}
-              onMouseLeave={() => setIsUserMenuOpen(false)}
-            >
-              <User size={20} className="group-hover:scale-110 transition-transform" />
-            </button>
-            
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)} 
-              className="lg:hidden p-3 text-slate-900 bg-slate-100 rounded-2xl"
-            >
-              <Menu size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Cinematic Mobile Menu */}
-        <div className={`fixed inset-0 z-[200] bg-slate-950/40 backdrop-blur-3xl transition-all duration-700 ${
-          isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-        }`}>
-          <div className={`absolute top-0 right-0 w-full max-w-sm h-full bg-white shadow-2xl transition-transform duration-700 ease-expo ${
-            isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}>
-            <div className="p-8 flex justify-between items-center border-b border-slate-100">
-              <h1 className="text-xl font-black italic uppercase">LUXORAA</h1>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-slate-100 rounded-2xl"><X size={24} /></button>
-            </div>
-            <div className="p-10 space-y-12">
-              {['Home', 'Marketplace', 'Archive', 'Identity'].map((item, idx) => (
-                <button 
-                  key={item}
-                  onClick={() => {
-                    if (item === 'Identity') onNavigate('profile');
-                    else onNavigate(item.toLowerCase());
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`block text-5xl font-black italic tracking-tighter hover:text-indigo-600 transition-all duration-500 delay-${idx * 100}`}
-                >
-                  {item}.
-                </button>
-              ))}
+              <button onClick={() => onNavigate('cart')} className="p-3 bg-slate-900 text-white rounded-2xl flex items-center gap-2 hover:bg-rose-600 transition-all shadow-xl group">
+                <ShoppingCart size={18} />
+                <span className="text-[10px] font-black">{cartCount}</span>
+              </button>
+              <button onClick={() => onNavigate('profile')} className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-950 hover:bg-slate-200 transition-all">
+                <User size={20} />
+              </button>
             </div>
           </div>
         </div>
