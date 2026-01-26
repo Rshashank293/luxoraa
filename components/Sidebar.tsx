@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, setIsOp
   return (
     <aside className={`h-full glass border-r border-amber-900/20 transition-all duration-300 z-50 flex flex-col ${isOpen ? 'w-64' : 'w-20'}`}>
       <div className="p-6 flex items-center justify-between">
-        {isOpen && <h1 className="serif text-2xl gold-text font-bold tracking-widest">LUXORA</h1>}
+        {isOpen && <h1 className="serif text-2xl gold-text font-bold tracking-widest">LUXORAA</h1>}
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-amber-500"

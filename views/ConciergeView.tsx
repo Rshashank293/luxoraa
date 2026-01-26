@@ -135,7 +135,7 @@ const ConciergeView: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Inquire Luxora..."
+            placeholder="Inquire Luxoraa..."
             className="w-full bg-slate-900/50 border border-slate-800 rounded-full py-5 px-8 pr-16 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all text-lg placeholder-slate-600 shadow-inner glass group-hover:bg-slate-900/80"
           />
           <button 

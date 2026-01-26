@@ -13,7 +13,7 @@ const HomeView: React.FC<HomeViewProps> = ({ setView }) => {
         <h2 className="text-slate-400 text-sm tracking-widest uppercase mb-2">Welcome Back</h2>
         <h1 className="serif text-5xl lg:text-6xl gold-text font-light mb-4">Good Evening, Julien</h1>
         <p className="text-slate-400 text-lg max-w-2xl leading-relaxed">
-          Your personal gateway to the world's most exclusive experiences. How may Luxora elevate your lifestyle today?
+          Your personal gateway to the world's most exclusive experiences. How may Luxoraa elevate your lifestyle today?
         </p>
       </header>
 

@@ -102,7 +102,7 @@ const VoiceView: React.FC = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "You are Luxora Voice, a sophisticated and helpful concierge. Your tone is warm, refined, and intelligent. Assist the user with their verbal inquiries immediately.",
+          systemInstruction: "You are Luxoraa Voice, a sophisticated and helpful concierge. Your tone is warm, refined, and intelligent. Assist the user with their verbal inquiries immediately.",
           outputAudioTranscription: {},
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
@@ -121,7 +121,7 @@ const VoiceView: React.FC = () => {
     <div className="h-full flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-2xl w-full">
         <header className="mb-16">
-          <h1 className="serif text-4xl gold-text mb-4">Luxora Voice</h1>
+          <h1 className="serif text-4xl gold-text mb-4">Luxoraa Voice</h1>
           <p className="text-slate-400">Engage in real-time vocal consultation for immediate lifestyle arrangements.</p>
         </header>
 
