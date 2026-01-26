@@ -7,13 +7,15 @@ import ProductDetail from './components/ProductDetail';
 import CheckoutView from './components/CheckoutView';
 import AIHelpDesk from './components/AIHelpDesk';
 import AdminDashboard from './components/AdminDashboard';
+import LoginPage from './components/LoginPage';
 import { 
   Sparkles, Package, ChevronRight, ArrowRight, Zap, Trophy, Clock, Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, ShieldAlert, Settings, LogOut
 } from 'lucide-react';
 import { getSmartSearch, getSmartRecommendations } from './services/geminiService';
 
 const App: React.FC = () => {
-  const [persona, setPersona] = useState<'customer' | 'admin' | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [activePage, setActivePage] = useState<string>('home');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,7 +26,6 @@ const App: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [aiRecommendations, setAiRecommendations] = useState<Product[]>([]);
   
-  const [user, setUser] = useState<User | null>(null);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -38,40 +39,27 @@ const App: React.FC = () => {
   const cartTotal = cartWithProducts.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
   useEffect(() => {
-    if (persona === 'customer') {
+    if (isAuthenticated && user?.role === 'customer') {
       const fetchAI = async () => {
         const recs = await getSmartRecommendations("luxury urban style, eco-conscious consumer", MOCK_PRODUCTS);
         setAiRecommendations(recs);
       };
       fetchAI();
     }
-  }, [persona]);
+  }, [isAuthenticated, user?.role]);
 
-  const selectPersona = (p: 'customer' | 'admin') => {
-    setPersona(p);
-    if (p === 'customer') {
-      setUser({
-        id: 'u-1',
-        name: 'Alex Rivera',
-        email: 'alex@luxoraa.com',
-        role: 'customer',
-        points: 450,
-        tier: 'Gold',
-        walletBalance: 250.00
-      });
-      setActivePage('home');
-    } else {
-      setUser({
-        id: 'a-1',
-        name: 'Admin Supervisor',
-        email: 'ops@luxoraa.com',
-        role: 'admin',
-        points: 0,
-        tier: 'Platinum',
-        walletBalance: 0
-      });
-      setActivePage('admin');
-    }
+  const handleLogin = (loggedUser: User) => {
+    setUser(loggedUser);
+    setIsAuthenticated(true);
+    setActivePage(loggedUser.role === 'admin' ? 'admin' : 'home');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    setCart([]);
+    setWishlist([]);
+    setActivePage('home');
   };
 
   const handleSearch = async (query: string) => {
@@ -135,43 +123,8 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  if (!persona) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 selection:bg-indigo-500/30">
-        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-slate-800/50 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 flex flex-col items-center text-center group hover:border-indigo-500/50 transition-all duration-500 hover:translate-y-[-8px]">
-            <div className="w-24 h-24 bg-indigo-600 rounded-3xl flex items-center justify-center text-white mb-8 shadow-[0_20px_40px_-15px_rgba(79,70,229,0.5)] group-hover:scale-110 transition-transform">
-              <ShoppingBag size={48} />
-            </div>
-            <h2 className="text-3xl font-black text-white mb-4">Customer Experience</h2>
-            <p className="text-slate-400 mb-10 leading-relaxed">Shop the latest collections with AI-curated recommendations and elite loyalty rewards.</p>
-            <button 
-              onClick={() => selectPersona('customer')}
-              className="w-full bg-white text-slate-900 py-5 rounded-2xl font-black text-lg hover:bg-indigo-500 hover:text-white transition-all shadow-2xl"
-            >
-              Enter Storefront
-            </button>
-          </div>
-
-          <div className="bg-slate-800/50 backdrop-blur-xl border border-white/10 rounded-[48px] p-10 flex flex-col items-center text-center group hover:border-rose-500/50 transition-all duration-500 hover:translate-y-[-8px]">
-            <div className="w-24 h-24 bg-rose-600 rounded-3xl flex items-center justify-center text-white mb-8 shadow-[0_20px_40px_-15px_rgba(225,29,72,0.5)] group-hover:scale-110 transition-transform">
-              <ShieldAlert size={48} />
-            </div>
-            <h2 className="text-3xl font-black text-white mb-4">Admin Console</h2>
-            <p className="text-slate-400 mb-10 leading-relaxed">Manage inventory, track global logistics, and analyze AI-driven market insights.</p>
-            <button 
-              onClick={() => selectPersona('admin')}
-              className="w-full bg-slate-700 text-white py-5 rounded-2xl font-black text-lg hover:bg-rose-600 transition-all shadow-2xl border border-white/10"
-            >
-              Access Command Center
-            </button>
-          </div>
-        </div>
-        <div className="fixed bottom-10 text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-          Luxoraa E-Commerce Suite • Enterprise Edition
-        </div>
-      </div>
-    );
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   return (
@@ -286,7 +239,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="mt-12 grid grid-cols-1 gap-4">
                   <button onClick={() => setActivePage('orders')} className="w-full bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center group hover:border-indigo-600 transition-all"><div className="flex items-center gap-4"><div className="p-3 bg-slate-100 rounded-2xl text-slate-900"><Clock size={20} /></div><span className="font-bold text-slate-900">Order History</span></div><ChevronRight size={20} className="text-slate-400 group-hover:translate-x-1 transition-transform" /></button>
-                  <button onClick={() => setPersona(null)} className="w-full bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center group hover:border-rose-600 transition-all text-rose-600 font-bold"><div className="flex items-center gap-4"><div className="p-3 bg-rose-50 rounded-2xl text-rose-600"><LogOut size={20} /></div>Switch Role Persona</div><ChevronRight size={20} /></button>
+                  <button onClick={handleLogout} className="w-full bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center group hover:border-rose-600 transition-all text-rose-600 font-bold"><div className="flex items-center gap-4"><div className="p-3 bg-rose-50 rounded-2xl text-rose-600"><LogOut size={20} /></div>Sign Out</div><ChevronRight size={20} /></button>
                 </div>
               </div>
             )}
@@ -298,12 +251,12 @@ const App: React.FC = () => {
         )}
       </main>
       
-      {persona === 'customer' && <AIHelpDesk />}
+      {user?.role === 'customer' && <AIHelpDesk />}
       
       <footer className="bg-slate-900 text-white pt-24 pb-10 mt-32">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
           <div className="sm:col-span-2"><h2 className="text-3xl font-black italic tracking-tighter mb-8 text-indigo-400">LUXORAA GLOBAL</h2><p className="text-slate-400 max-w-sm">Premium AI-powered curation for the modern global consumer.</p></div>
-          <div><h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-8">Role Access</h4><ul className="space-y-4 text-sm font-bold"><li className="hover:text-indigo-400 cursor-pointer" onClick={() => selectPersona('customer')}>Switch to Storefront</li><li className="hover:text-indigo-400 cursor-pointer" onClick={() => selectPersona('admin')}>Switch to Admin Console</li></ul></div>
+          <div><h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-8">Quick Links</h4><ul className="space-y-4 text-sm font-bold"><li className="hover:text-indigo-400 cursor-pointer" onClick={() => setActivePage('home')}>Shop All</li><li className="hover:text-indigo-400 cursor-pointer" onClick={() => setActivePage('profile')}>My Account</li><li className="hover:text-indigo-400 cursor-pointer text-rose-400" onClick={handleLogout}>Sign Out</li></ul></div>
         </div>
       </footer>
     </div>
