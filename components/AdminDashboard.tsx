@@ -13,11 +13,12 @@ interface AdminDashboardProps {
   orders: Order[];
 }
 
+// Add isMember property to match User interface
 const MOCK_USERS: User[] = [
-  { id: 'u-1', name: 'Alex Rivera', email: 'alex@luxoraa.com', role: 'customer', points: 450, tier: 'Gold', walletBalance: 250, status: 'Active', lastLogin: '2025-05-10T14:30:00Z', mfaEnabled: false },
-  { id: 'u-2', name: 'Sarah Chen', email: 'sarah@design.io', role: 'customer', points: 1200, tier: 'Platinum', walletBalance: 890, status: 'Active', lastLogin: '2025-05-11T09:15:00Z', mfaEnabled: true },
-  { id: 'u-3', name: 'Mike Ross', email: 'mike@firm.com', role: 'customer', points: 50, tier: 'Silver', walletBalance: 0, status: 'Suspended', lastLogin: '2025-04-30T11:00:00Z', mfaEnabled: false },
-  { id: 's-1', name: 'Rivera Designs', email: 'seller@luxoraa.com', role: 'seller', points: 120, tier: 'Gold', walletBalance: 1250, status: 'Active', lastLogin: '2025-05-11T10:00:00Z', mfaEnabled: true },
+  { id: 'u-1', name: 'Alex Rivera', email: 'alex@luxoraa.com', role: 'customer', points: 450, tier: 'Gold', walletBalance: 250, status: 'Active', lastLogin: '2025-05-10T14:30:00Z', mfaEnabled: false, isMember: true },
+  { id: 'u-2', name: 'Sarah Chen', email: 'sarah@design.io', role: 'customer', points: 1200, tier: 'Platinum', walletBalance: 890, status: 'Active', lastLogin: '2025-05-11T09:15:00Z', mfaEnabled: true, isMember: true },
+  { id: 'u-3', name: 'Mike Ross', email: 'mike@firm.com', role: 'customer', points: 50, tier: 'Silver', walletBalance: 0, status: 'Suspended', lastLogin: '2025-04-30T11:00:00Z', mfaEnabled: false, isMember: false },
+  { id: 's-1', name: 'Rivera Designs', email: 'seller@luxoraa.com', role: 'seller', points: 120, tier: 'Gold', walletBalance: 1250, status: 'Active', lastLogin: '2025-05-11T10:00:00Z', mfaEnabled: true, isMember: false },
 ];
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ products, orders }) => {

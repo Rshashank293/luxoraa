@@ -1,7 +1,7 @@
 
-export type Category = 'Clothes' | 'Toys' | 'Shoes' | 'Accessories' | 'Electronics' | 'Home';
+export type Category = 'Classic T-Shirts' | 'Oversized Tees' | 'Hoodies & Sweatshirts' | 'Joggers & Pajamas' | 'Shoes' | 'Accessories';
 
-export type LoyaltyTier = 'Silver' | 'Gold' | 'Platinum';
+export type LoyaltyTier = 'Member' | 'Silver' | 'Gold' | 'Platinum';
 
 export type UserStatus = 'Active' | 'Suspended' | 'Pending Verification';
 
@@ -23,7 +23,7 @@ export interface Review {
   rating: number;
   comment: string;
   date: string;
-  sentiment?: 'Positive' | 'Neutral' | 'Negative'; // AI generated
+  sentiment?: 'Positive' | 'Neutral' | 'Negative';
 }
 
 export interface Product {
@@ -31,7 +31,9 @@ export interface Product {
   title: string;
   description: string;
   price: number;
+  membershipPrice?: number; // TSS specific
   category: Category;
+  collectionName?: string; // e.g., "Marvel", "Naruto"
   images: string[];
   stock: number;
   rating: number;
@@ -61,6 +63,7 @@ export interface User {
   avatar?: string;
   points: number;
   tier: LoyaltyTier;
+  isMember: boolean; // TSS specific
   walletBalance: number;
   status: UserStatus;
   lastLogin: string;
@@ -88,7 +91,7 @@ export interface Order {
   trackingNumber: string;
   paymentMethod: string;
   shippingAddress: ShippingAddress;
-  fraudScore: number; // AI detection 0-100
+  fraudScore: number;
   isAIGeneratedRecovery?: boolean;
 }
 

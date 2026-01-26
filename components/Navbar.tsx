@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Heart, User, Search, Menu, X, Sparkles, ShieldAlert, Store, LogIn, Command } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X, Sparkles, ShieldAlert, Store, LogIn, Command, LogOut, Settings } from 'lucide-react';
 
 interface NavbarProps {
   cartCount: number;
@@ -13,8 +13,9 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSearch, userRole }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  
   const isAdmin = userRole === 'admin';
-  const isSeller = userRole === 'seller';
   const isAuthenticated = !!userRole;
 
   useEffect(() => {
@@ -77,7 +78,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
           </div>
 
           {/* Interaction Shard */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 relative">
             <div className="hidden sm:flex items-center bg-slate-100/50 p-1.5 rounded-2xl gap-1">
               <button onClick={() => onNavigate('wishlist')} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-white rounded-xl transition-all"><Heart size={18} /></button>
               <button onClick={() => onNavigate('cart')} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all relative">
@@ -90,27 +91,18 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
               </button>
             </div>
 
+            {/* Profile / Identity Button (The "Person Logo") */}
             <button 
               onClick={() => onNavigate('profile')} 
-              className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all duration-500 ${
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl group ${
                 isAuthenticated 
                 ? 'bg-slate-100 text-slate-900 hover:bg-slate-200' 
-                : 'bg-slate-900 text-white hover:bg-indigo-600 shadow-xl shadow-indigo-600/20'
+                : 'bg-slate-900 text-white hover:bg-indigo-600 shadow-indigo-600/20'
               }`}
+              onMouseEnter={() => setIsUserMenuOpen(true)}
+              onMouseLeave={() => setIsUserMenuOpen(false)}
             >
-              {isAuthenticated ? (
-                <>
-                  <div className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
-                    {userPoints > 0 ? 'P' : <User size={12} />}
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest hidden lg:inline">Access Identity</span>
-                </>
-              ) : (
-                <>
-                  <LogIn size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Authenticate</span>
-                </>
-              )}
+              <User size={20} className="group-hover:scale-110 transition-transform" />
             </button>
             
             <button 
@@ -137,7 +129,11 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, userPoints, onNavigate, onSe
               {['Home', 'Marketplace', 'Archive', 'Identity'].map((item, idx) => (
                 <button 
                   key={item}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    if (item === 'Identity') onNavigate('profile');
+                    else onNavigate(item.toLowerCase());
+                    setIsMobileMenuOpen(false);
+                  }}
                   className={`block text-5xl font-black italic tracking-tighter hover:text-indigo-600 transition-all duration-500 delay-${idx * 100}`}
                 >
                   {item}.

@@ -25,8 +25,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setMounted(true);
   }, []);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     setError(null);
 
@@ -34,7 +34,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     try {
-      if (password.length < 6) {
+      if (!email && !password) {
+        // Assume social login or default
+      } else if (password && password.length < 6) {
         throw new Error("Security protocol requires min. 6 characters for secret passphrase.");
       }
 
@@ -43,12 +45,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       }
 
       let mockUser: UserType;
+      // Added isMember property to match User interface requirements
       if (role === 'admin') {
-        mockUser = { id: 'a-1', name: 'Jordan Vance', email: email || 'ops@luxoraa.com', role: 'admin', points: 0, tier: 'Platinum', walletBalance: 0, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true };
+        mockUser = { id: 'a-1', name: 'Jordan Vance', email: email || 'ops@luxoraa.com', role: 'admin', points: 0, tier: 'Platinum', walletBalance: 0, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true, isMember: false };
       } else if (role === 'seller') {
-        mockUser = { id: 's-1', name: name || 'Rivera Designs', email: email || 'seller@luxoraa.com', role: 'seller', points: 120, tier: 'Gold', walletBalance: 1250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true };
+        mockUser = { id: 's-1', name: name || 'Rivera Designs', email: email || 'seller@luxoraa.com', role: 'seller', points: 120, tier: 'Gold', walletBalance: 1250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true, isMember: false };
       } else {
-        mockUser = { id: 'u-1', name: name || 'Alex Rivera', email: email || 'alex@luxoraa.com', role: 'customer', points: 450, tier: 'Gold', walletBalance: 250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: false };
+        mockUser = { id: 'u-1', name: name || 'Alex Rivera', email: email || 'alex@luxoraa.com', role: 'customer', points: 450, tier: 'Gold', walletBalance: 250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: false, isMember: true };
       }
       
       onLogin(mockUser);
@@ -56,6 +59,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       setError(err.message);
       setIsLoading(false);
     }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    console.log(`Authenticating with ${provider}...`);
+    handleAuth();
   };
 
   const theme = {
@@ -98,12 +106,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       </div>
 
       {/* Authentication Form Side */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-24 bg-[#fcfcfd] relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-20 bg-[#fcfcfd] relative overflow-hidden">
         {/* Abstract Background Element */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-slate-100/50 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2" />
 
         <div className="w-full max-w-[460px] relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="mb-16 lg:text-left text-center">
+          <div className="mb-12 lg:text-left text-center">
             <h3 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter uppercase">
               {isSignUp ? 'New Node' : 'Authenticate'}
             </h3>
@@ -119,13 +127,37 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </div>
           )}
 
-          <form onSubmit={handleAuth} className="space-y-8">
+          {/* Social Logins */}
+          <div className="grid grid-cols-2 gap-4 mb-10">
+            <button 
+              onClick={() => handleSocialLogin('Google')}
+              className="flex items-center justify-center gap-3 bg-white border border-slate-100 rounded-[24px] py-4 px-6 hover:bg-slate-50 transition-all shadow-sm group"
+            >
+              <Chrome size={18} className="text-slate-950 group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Google</span>
+            </button>
+            <button 
+              onClick={() => handleSocialLogin('Apple')}
+              className="flex items-center justify-center gap-3 bg-white border border-slate-100 rounded-[24px] py-4 px-6 hover:bg-slate-50 transition-all shadow-sm group"
+            >
+              <Apple size={18} className="text-slate-950 group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Apple</span>
+            </button>
+          </div>
+
+          <div className="relative flex items-center gap-4 mb-10">
+             <div className="flex-1 h-[1px] bg-slate-100" />
+             <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em]">Or standard comms</span>
+             <div className="flex-1 h-[1px] bg-slate-100" />
+          </div>
+
+          <form onSubmit={handleAuth} className="space-y-6">
             {isSignUp && (
               <div className="space-y-2.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-3">Full Identity Name</label>
                 <div className="relative group">
                   <UserIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={20} />
-                  <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Alexander Rivera" className="w-full bg-white border border-slate-100 rounded-[28px] py-5 pl-16 pr-6 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
+                  <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Alexander Rivera" className="w-full bg-white border border-slate-100 rounded-[28px] py-4 pl-16 pr-6 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
                 </div>
               </div>
             )}
@@ -134,7 +166,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-3">Node Address (Email)</label>
               <div className="relative group">
                 <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={20} />
-                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="identity@luxoraa.com" className="w-full bg-white border border-slate-100 rounded-[28px] py-5 pl-16 pr-6 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
+                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="identity@luxoraa.com" className="w-full bg-white border border-slate-100 rounded-[28px] py-4 pl-16 pr-6 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
               </div>
             </div>
 
@@ -145,7 +177,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               </div>
               <div className="relative group">
                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={20} />
-                <input required type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-100 rounded-[28px] py-5 pl-16 pr-16 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
+                <input required type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-100 rounded-[28px] py-4 pl-16 pr-16 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-900 transition-colors p-2">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
               </div>
             </div>
@@ -153,7 +185,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <button 
               type="submit" 
               disabled={isLoading} 
-              className={`w-full py-7 rounded-[32px] font-black text-sm uppercase tracking-[0.6em] flex items-center justify-center gap-6 transition-all shadow-3xl active:scale-[0.98] text-white ${isLoading ? 'bg-slate-200 cursor-wait' : `${theme.main} hover:scale-[1.02] ${theme.glow}`}`}
+              className={`w-full py-6 rounded-[32px] font-black text-sm uppercase tracking-[0.6em] flex items-center justify-center gap-6 transition-all shadow-3xl active:scale-[0.98] text-white ${isLoading ? 'bg-slate-200 cursor-wait' : `${theme.main} hover:scale-[1.02] ${theme.glow}`}`}
             >
               {isLoading ? (
                 <div className="flex items-center gap-4">
@@ -169,7 +201,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </button>
           </form>
 
-          <div className="mt-16 text-center">
+          <div className="mt-12 text-center">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
               {isSignUp ? 'Already have an endpoint?' : 'Need node authorization?'} 
               <button onClick={() => { setIsSignUp(!isSignUp); setError(null); }} className="text-slate-900 font-black ml-4 hover:underline">
@@ -179,7 +211,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           </div>
 
           {/* Persistent Control Hub */}
-          <div className="mt-24 pt-12 border-t border-slate-100 flex flex-col items-center gap-10">
+          <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col items-center gap-8">
              <div className="flex gap-4 p-2.5 bg-slate-100/50 rounded-[32px] border border-slate-100 backdrop-blur-sm shadow-inner">
                 {[
                   { id: 'customer', label: 'Store', icon: ShoppingBag, color: 'indigo' },
@@ -189,7 +221,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   <button 
                     key={r.id} 
                     onClick={() => { setRole(r.id as any); setIsSignUp(false); setError(null); }} 
-                    className={`px-8 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 ${role === r.id ? `bg-white text-slate-900 shadow-2xl scale-110 z-10` : 'text-slate-400 hover:text-slate-900'}`}
+                    className={`px-6 py-3 rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 ${role === r.id ? `bg-white text-slate-900 shadow-2xl scale-110 z-10` : 'text-slate-400 hover:text-slate-900'}`}
                   >
                     <r.icon size={16} /> {r.label}
                   </button>
