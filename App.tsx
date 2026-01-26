@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { MOCK_PRODUCTS } from './constants';
 import { Product, CartItem, Order, ShippingAddress, User, Seller } from './types';
@@ -10,11 +11,11 @@ import AdminDashboard from './components/AdminDashboard';
 import SellerDashboard from './components/SellerDashboard';
 import LoginPage from './components/LoginPage';
 import { 
-  Sparkles, Package, ChevronRight, ArrowRight, Zap, Trophy, Clock, 
+  Sparkles, Package, ChevronRight, ChevronLeft, ArrowRight, Zap, Trophy, Clock, 
   Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, 
   ShieldAlert, Settings, LogOut, Store, ArrowDown, ShieldCheck, 
   LayoutDashboard, Bell, Globe, Fingerprint, Activity, Menu, X, Terminal,
-  CreditCard, BarChart4, Users
+  CreditCard, BarChart4, Users, Layers, Command, MousePointer2
 } from 'lucide-react';
 import { getSmartSearch, getSmartRecommendations } from './services/geminiService';
 
@@ -35,7 +36,6 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API token verification on mount
     const verifySession = () => {
       const savedSession = localStorage.getItem('lux_session_token');
       if (savedSession) {
@@ -49,7 +49,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       }
       setLoading(false);
     };
-    setTimeout(verifySession, 800);
+    setTimeout(verifySession, 2000); // Extended slightly for the new logo animation to shine
   }, []);
 
   const login = (userData: User) => {
@@ -87,9 +87,9 @@ const Toaster: React.FC<{ message: string | null; type: 'success' | 'error' | 'i
     info: 'bg-indigo-600 text-white'
   };
   return (
-    <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-4 ${colors[type]}`}>
-      <p className="font-black text-xs uppercase tracking-widest">{message}</p>
-      <button onClick={onClose}><X size={16} /></button>
+    <div className={`fixed bottom-12 left-1/2 -translate-x-1/2 z-[300] px-8 py-5 rounded-[32px] shadow-2xl flex items-center gap-6 animate-reveal ${colors[type]}`}>
+      <p className="font-black text-xs uppercase tracking-[0.2em]">{message}</p>
+      <button onClick={onClose} className="opacity-40 hover:opacity-100"><X size={16} /></button>
     </div>
   );
 };
@@ -103,7 +103,6 @@ const LuxoraaApp: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [aiRecommendations, setAiRecommendations] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -127,7 +126,6 @@ const LuxoraaApp: React.FC = () => {
 
   const cartTotal = cartWithProducts.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
-  // Auto-redirect to Dashboards if logged in and on home
   useEffect(() => {
     if (loading) return;
     if (isAuthenticated) {
@@ -136,24 +134,23 @@ const LuxoraaApp: React.FC = () => {
     }
   }, [isAuthenticated, user?.role, loading, activePage]);
 
-  // AI Curation Hook - Works for guests too
   useEffect(() => {
     const fetchCuration = async () => {
-      const recs = await getSmartRecommendations("luxury urban minimalist aesthetic", MOCK_PRODUCTS);
+      const recs = await getSmartRecommendations("luxury urban minimalist aesthetic high-end", MOCK_PRODUCTS);
       setAiRecommendations(recs);
     };
     fetchCuration();
   }, [isAuthenticated, activePage]);
 
-  const handleAddToCart = (productId: string, size?: string, color?: string) => {
+  const handleAddToCart = (productId: string) => {
     setCart(prev => {
-      const existing = prev.find(item => item.productId === productId && item.selectedSize === size && item.selectedColor === color);
+      const existing = prev.find(item => item.productId === productId);
       if (existing) {
-        return prev.map(item => (item.productId === productId && item.selectedSize === size && item.selectedColor === color) ? { ...item, quantity: item.quantity + 1 } : item);
+        return prev.map(item => (item.productId === productId) ? { ...item, quantity: item.quantity + 1 } : item);
       }
-      return [...prev, { productId, quantity: 1, selectedSize: size, selectedColor: color }];
+      return [...prev, { productId, quantity: 1 }];
     });
-    setToast({ message: 'Added to your collection', type: 'success' });
+    setToast({ message: 'Identity Shard Acquired', type: 'success' });
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -167,96 +164,74 @@ const LuxoraaApp: React.FC = () => {
     }
   };
 
+  const categories = [
+    { name: 'Clothes', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200', color: 'bg-indigo-600', count: MOCK_PRODUCTS.filter(p => p.category === 'Clothes').length },
+    { name: 'Shoes', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=1200', color: 'bg-emerald-600', count: MOCK_PRODUCTS.filter(p => p.category === 'Shoes').length },
+    { name: 'Toys', image: 'https://images.unsplash.com/photo-1558685913-d9198f62e711?auto=format&fit=crop&q=80&w=1200', color: 'bg-amber-500', count: MOCK_PRODUCTS.filter(p => p.category === 'Toys').length },
+    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200', color: 'bg-rose-600', count: MOCK_PRODUCTS.filter(p => p.category === 'Accessories').length },
+  ];
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-6">
-        <div className="w-16 h-16 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-        <h1 className="text-xl font-black italic text-white/40 tracking-[0.5em] uppercase">Booting Luxoraa</h1>
-      </div>
-    );
-  }
-
-  // --- OPERATIONS LAYOUT (Admin / Seller) ---
-  // Requires Authentication
-  if (isAuthenticated && (user?.role === 'admin' || user?.role === 'seller')) {
-    const isAdmin = user.role === 'admin';
-    const accent = isAdmin ? 'rose' : 'emerald';
-
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex selection:bg-rose-600/20">
-        <Toaster message={toast?.message || null} type={toast?.type || 'info'} onClose={() => setToast(null)} />
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
+        {/* Ambient background glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px]" />
         
-        {/* Ops Sidebar */}
-        <aside className={`transition-all duration-500 border-r border-white/5 bg-slate-950 flex flex-col h-screen sticky top-0 ${isSidebarCollapsed ? 'w-24' : 'w-80'}`}>
-          <div className="p-8 flex items-center gap-4">
-             <div className={`p-3 rounded-2xl shadow-2xl ${isAdmin ? 'bg-rose-600' : 'bg-emerald-600'}`}>
-                <Terminal size={24} className="text-white" />
-             </div>
-             {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter italic">LUXORAA <span className="text-[10px] uppercase not-italic opacity-40">Ops</span></h1>}
-          </div>
-
-          <div className="flex-1 px-4 space-y-2 pt-10">
-            {[
-              { id: isAdmin ? 'admin' : 'seller', icon: LayoutDashboard, label: 'Control' },
-              { id: 'inventory', icon: Package, label: 'Inventory' },
-              { id: 'analytics', icon: BarChart4, label: 'Analytics' },
-              { id: 'users', icon: Users, label: 'Identity' },
-              { id: 'security', icon: Fingerprint, label: 'Security' },
-            ].map((item) => (
-              <button 
-                key={item.id}
-                onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                  activePage === item.id 
-                  ? (isAdmin ? 'bg-rose-600 text-white shadow-xl' : 'bg-emerald-600 text-white shadow-xl') 
-                  : 'text-slate-500 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <item.icon size={22} />
-                {!isSidebarCollapsed && <span className="font-black text-[10px] uppercase tracking-[0.2em]">{item.label}</span>}
-              </button>
-            ))}
-          </div>
-
-          <div className="p-6 border-t border-white/5">
-             <button onClick={logout} className="w-full flex items-center gap-4 p-4 rounded-2xl text-slate-500 hover:text-rose-500 transition-all">
-                <LogOut size={22} />
-                {!isSidebarCollapsed && <span className="font-black text-[10px] uppercase tracking-[0.2em]">Exit Terminal</span>}
-             </button>
-          </div>
-        </aside>
-
-        {/* Workspace Area */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden">
-          <header className="h-20 border-b border-white/5 px-10 flex justify-between items-center bg-slate-950/80 backdrop-blur-2xl relative z-50">
-            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-2 text-slate-500 hover:text-white transition-colors">
-              {isSidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
-            </button>
-            <div className="flex items-center gap-8">
-               <div className="flex items-center gap-3 bg-white/5 px-5 py-2 rounded-full border border-white/10">
-                  <Activity size={14} className={isAdmin ? 'text-rose-500' : 'text-emerald-500'} />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Node: {isAdmin ? 'Global Root' : 'Merchant-S1'}</span>
-               </div>
-               <div className="flex items-center gap-4 pl-8 border-l border-white/10">
-                  <div className="text-right">
-                    <p className="text-xs font-black">{user.name}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase">{user.role}</p>
-                  </div>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${isAdmin ? 'bg-rose-600' : 'bg-emerald-600'}`}>
-                    {user.name.charAt(0)}
-                  </div>
-               </div>
+        <div className="relative z-10 flex flex-col items-center gap-12">
+          {/* Animated Icon Core */}
+          <div className="relative w-32 h-32 flex items-center justify-center">
+            {/* Rotating Rings */}
+            <div className="absolute inset-0 border-[1px] border-white/5 rounded-3xl animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-[1px] border-indigo-500/20 rounded-2xl animate-[spin_6s_linear_infinite_reverse]" />
+            
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)] animate-reveal">
+              <Command size={40} className="text-slate-950" />
             </div>
-          </header>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-10">
-            {activePage === (isAdmin ? 'admin' : 'seller') && (
-              isAdmin ? <AdminDashboard products={MOCK_PRODUCTS} orders={orders} /> : <SellerDashboard seller={{ id: 's-1', name: 'Rivera Designs', rating: 4.8, joinedDate: '2024', isVerified: true, commissionRate: 0.1, totalSales: 4500, balance: 1250 }} products={MOCK_PRODUCTS} orders={orders} />
-            )}
-            {activePage === 'inventory' && <div className="animate-in"><h1 className="text-6xl font-black tracking-tighter italic text-white/20 mb-10">Inventory <br/> Management</h1><div className="bg-white/5 rounded-[40px] p-20 border border-white/10 text-center"><Package className="mx-auto mb-6 text-slate-700" size={60} /><p className="text-slate-500 font-bold">Catalog data synchronized. Accessing localized shards...</p></div></div>}
-            {activePage === 'security' && <div className="animate-in"><h1 className="text-6xl font-black tracking-tighter italic text-white/20 mb-10">Security <br/> Protocols</h1><div className="grid grid-cols-2 gap-8"><div className="bg-rose-600/10 p-10 rounded-[40px] border border-rose-600/20"><ShieldAlert className="mb-6 text-rose-500" size={40} /><h3 className="text-xl font-black mb-2">Audit Logs</h3><p className="text-slate-500 text-sm">Real-time tracking of administrative mutations.</p></div><div className="bg-indigo-600/10 p-10 rounded-[40px] border border-indigo-600/20"><Fingerprint className="mb-6 text-indigo-500" size={40} /><h3 className="text-xl font-black mb-2">MFA Matrix</h3><p className="text-slate-500 text-sm">Manage multi-factor authentication requirements.</p></div></div></div>}
+            
+            {/* Shimmer line */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" style={{ transform: 'rotate(45deg)' }} />
           </div>
-        </main>
+
+          {/* Typography Reveal */}
+          <div className="flex flex-col items-center">
+            <h1 className="text-6xl font-display italic font-black text-white tracking-[-0.05em] uppercase relative">
+              <span className="inline-block animate-[reveal_1s_ease-out_forwards] opacity-0">L</span>
+              <span className="inline-block animate-[reveal_1s_ease-out_0.1s_forwards] opacity-0">U</span>
+              <span className="inline-block animate-[reveal_1s_ease-out_0.2s_forwards] opacity-0">X</span>
+              <span className="inline-block animate-[reveal_1s_ease-out_0.3s_forwards] opacity-0">O</span>
+              <span className="inline-block animate-[reveal_1s_ease-out_0.4s_forwards] opacity-0">R</span>
+              <span className="inline-block animate-[reveal_1s_ease-out_0.5s_forwards] opacity-0 text-indigo-500">A</span>
+              <span className="inline-block animate-[reveal_1s_ease-out_0.6s_forwards] opacity-0 text-indigo-500">A</span>
+              
+              {/* Shine effect across text */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_3s_infinite_1.5s]" />
+            </h1>
+            
+            <div className="mt-6 flex items-center gap-4 animate-reveal stagger-3 opacity-0 [animation-fill-mode:forwards]">
+               <div className="h-[1px] w-12 bg-white/10" />
+               <span className="text-[10px] font-black uppercase tracking-[1em] text-white/30">Curation Matrix</span>
+               <div className="h-[1px] w-12 bg-white/10" />
+            </div>
+          </div>
+        </div>
+
+        {/* Global Progress Bar Minimalist */}
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 h-[2px] bg-white/5 rounded-full overflow-hidden">
+           <div className="h-full bg-white/20 animate-[loading_2s_ease-in-out_infinite]" />
+        </div>
+        
+        <style>{`
+          @keyframes loading {
+            0% { transform: translateX(-100%); width: 30%; }
+            50% { transform: translateX(0%); width: 60%; }
+            100% { transform: translateX(100%); width: 30%; }
+          }
+          @keyframes shimmer {
+            0% { transform: translateX(-150%) rotate(45deg); }
+            100% { transform: translateX(150%) rotate(45deg); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -267,223 +242,320 @@ const LuxoraaApp: React.FC = () => {
     return <LoginPage onLogin={(u) => { useAuth().login(u); setActivePage('home'); }} />;
   }
 
-  // --- MARKETPLACE LAYOUT (Customer / Guest) ---
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col selection:bg-indigo-600/20">
+    <div className="min-h-screen bg-[#fcfcfd] flex flex-col selection:bg-indigo-600/10 hero-gradient">
       <Toaster message={toast?.message || null} type={toast?.type || 'info'} onClose={() => setToast(null)} />
       <Navbar 
         cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
         userPoints={user?.points || 0} 
         onNavigate={setActivePage} 
         onSearch={handleSearch} 
-        userRole={user?.role}
+        userRole={user?.role} 
       />
       
-      <main className="flex-1 pt-32 max-w-7xl mx-auto px-6 w-full animate-in">
+      <main className="flex-1 pt-40 w-full animate-reveal">
         {activePage === 'home' && (
-          <div className="pb-32 space-y-32">
-            {/* Cinematic Hero */}
-            <section className="relative h-[700px] rounded-[64px] overflow-hidden shadow-[0_60px_120px_-30px_rgba(0,0,0,0.15)] group bg-slate-900">
-               <img 
-                 src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e12?auto=format&fit=crop&q=80&w=2000" 
-                 className="w-full h-full object-cover transition-transform duration-[10s] group-hover:scale-105 opacity-60" 
-               />
-               <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-transparent to-transparent flex items-center px-12 sm:px-24">
-                 <div className="max-w-4xl space-y-12 stagger-in">
-                    <div className="flex gap-4">
-                      <span className="glass border border-white/20 text-indigo-700 text-[10px] font-black px-8 py-3 rounded-full uppercase tracking-[0.4em] shadow-xl">Spring Collection 2025</span>
+          <div className="pb-40 space-y-48">
+            {/* Cinematic Editorial Hero */}
+            <div className="max-w-7xl mx-auto px-6">
+              <section className="relative h-[85vh] rounded-[80px] overflow-hidden shadow-[0_120px_200px_-60px_rgba(0,0,0,0.3)] group bg-slate-950">
+                <img 
+                  src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e12?auto=format&fit=crop&q=80&w=2000" 
+                  className="w-full h-full object-cover transition-transform duration-[15s] group-hover:scale-105 opacity-50 blur-[2px] group-hover:blur-0" 
+                  alt="Luxury Scene"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex items-end justify-start p-16 sm:p-24">
+                  <div className="max-w-5xl space-y-16 animate-reveal">
+                      <div className="flex items-center gap-4">
+                        <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black px-10 py-4 rounded-full uppercase tracking-[0.5em] shadow-2xl">Collection '25 Node</span>
+                      </div>
+                      <h2 className="text-[12rem] font-display italic text-white leading-[0.7] tracking-tighter">Editorial <br/> <span className="opacity-30 font-sans tracking-tight not-italic">Vanguard.</span></h2>
+                      <div className="flex flex-col sm:flex-row gap-12 items-start sm:items-center">
+                        <p className="text-3xl text-white/50 max-w-lg font-medium leading-relaxed italic font-display">
+                          A curated intersection of neural intelligence and artisan craftsmanship.
+                        </p>
+                        <button onClick={() => window.scrollTo({ top: 1000, behavior: 'smooth' })} className="bg-white text-slate-950 px-20 py-10 rounded-[48px] font-black text-2xl hover:bg-slate-100 transition-all shadow-3xl flex items-center gap-8 group/btn hover:scale-105 active:scale-95">
+                          Explore Artifacts <ArrowDown className="group-hover/btn:translate-y-2 transition-transform" />
+                        </button>
+                      </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {/* Curated Identity Shards (Categories) */}
+            <section className="max-w-7xl mx-auto px-6">
+              <div className="flex flex-col sm:flex-row items-end justify-between mb-24 gap-8">
+                <div className="animate-reveal">
+                  <h3 className="text-7xl font-display italic font-black tracking-tighter text-slate-950 uppercase mb-4">Shards.</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">Departmental Intelligence Nodes</p>
+                </div>
+                <div className="flex gap-4 p-2 bg-slate-100 rounded-3xl">
+                   <button className="px-10 py-4 bg-white shadow-xl rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-950">Overview</button>
+                   <button className="px-10 py-4 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-950">Matrix View</button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                {categories.map((cat, idx) => (
+                  <div 
+                    key={cat.name}
+                    onClick={() => { setSelectedCategory(cat.name); window.scrollTo({ top: 2200, behavior: 'smooth' }); }}
+                    className={`relative h-[550px] rounded-[64px] overflow-hidden group shadow-[0_40px_100px_-30px_rgba(0,0,0,0.1)] hover:scale-[1.03] transition-all duration-700 cursor-pointer animate-reveal stagger-${idx+1}`}
+                  >
+                    <img src={cat.image} className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-110 opacity-100 group-hover:opacity-90" alt={cat.name} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent" />
+                    <div className="absolute inset-0 p-12 flex flex-col justify-end items-start text-white">
+                      <div className={`px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest mb-6 ${cat.color} shadow-2xl`}>{cat.count} Artifacts</div>
+                      <h4 className="text-5xl font-display italic font-black mb-4 tracking-tighter">{cat.name}.</h4>
+                      <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 group-hover:translate-x-3 transition-all">Synchronise <ArrowRight className="inline ml-2" size={14} /></p>
                     </div>
-                    <h2 className="text-[10rem] font-display italic text-white leading-[0.8] tracking-tighter">The Art <br/> <span className="opacity-30 font-sans tracking-tight not-italic">of Space.</span></h2>
-                    <p className="text-3xl text-white/60 max-w-xl font-medium leading-relaxed italic font-display">A global vanguard of curation, fueled by neural intelligence.</p>
-                    <div className="flex gap-8 items-center pt-8">
-                      <button onClick={() => window.scrollTo({ top: 900, behavior: 'smooth' })} className="bg-white text-black px-16 py-7 rounded-[32px] font-black text-2xl hover:bg-indigo-600 hover:text-white transition-all shadow-3xl flex items-center gap-6 group/btn">
-                        Enter Marketplace <ArrowRight className="group-hover/btn:translate-x-3 transition-transform" />
-                      </button>
-                    </div>
-                 </div>
-               </div>
+                  </div>
+                ))}
+              </div>
             </section>
 
-            {/* Content Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-24">
-              <aside className="space-y-20 sticky top-32 h-fit">
-                <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-3xl relative overflow-hidden group">
-                   <div className="absolute top-0 right-0 p-10 opacity-5 text-indigo-600 group-hover:scale-110 transition-transform"><Trophy size={140} /></div>
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-12">User Identity</h4>
-                   <p className="text-5xl font-display italic font-black text-slate-900 mb-2">{isAuthenticated ? user?.tier : 'Guest Visitor'}</p>
-                   <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden mb-6 shadow-inner"><div className="h-full bg-indigo-600 rounded-full" style={{ width: isAuthenticated ? '65%' : '0%' }} /></div>
-                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} className="text-amber-400" /> {isAuthenticated ? `${user?.points} Lux Credits` : 'Login to earn rewards'}</p>
+            {/* Neural Recommendations Showcase */}
+            {!searchQuery && selectedCategory === 'All' && aiRecommendations.length > 0 && (
+              <section className="bg-slate-950 py-48 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-indigo-600/5 rounded-full blur-[200px] -translate-y-1/2 translate-x-1/2" />
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                  <div className="flex flex-col lg:flex-row items-end justify-between mb-24 gap-12">
+                    <div className="max-w-2xl">
+                      <div className="flex items-center gap-6 mb-10">
+                        <div className="p-5 bg-white/5 rounded-[32px] border border-white/10 text-indigo-400"><Sparkles size={32} /></div>
+                        <span className="text-[10px] font-black uppercase tracking-[1em] text-white/30">Neural Engine v3.0</span>
+                      </div>
+                      <h2 className="text-8xl font-display italic font-black tracking-tighter leading-none mb-10">Curated by <br/> <span className="text-indigo-500">Intelligence.</span></h2>
+                      <p className="text-2xl text-white/40 font-medium leading-relaxed italic font-display">
+                        Artifacts identified as perfect extensions of your current aesthetic frequency.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16">
+                    {aiRecommendations.map(p => (
+                      <ProductCard 
+                        key={`ai-${p.id}`} 
+                        product={p} 
+                        onAddToCart={handleAddToCart} 
+                        onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} 
+                        onToggleWishlist={() => {}} 
+                        isWishlisted={false} 
+                      />
+                    ))}
+                  </div>
                 </div>
+              </section>
+            )}
 
-                <div className="space-y-8">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-10 px-6">Discovery Shards</h4>
-                   <div className="grid grid-cols-1 gap-4">
-                     {['All', 'Clothes', 'Shoes', 'Toys', 'Accessories'].map(cat => (
-                       <button 
-                         key={cat} 
-                         onClick={() => setSelectedCategory(cat)} 
-                         className={`flex items-center justify-between w-full px-10 py-6 rounded-[32px] text-sm font-black transition-all ${
-                           selectedCategory === cat 
-                           ? 'bg-slate-950 text-white shadow-3xl scale-[1.05]' 
-                           : 'text-slate-400 hover:bg-white hover:text-slate-950 hover:shadow-xl'
-                         }`}
-                       >
-                         {cat} <ChevronRight size={16} />
-                       </button>
-                     ))}
-                   </div>
-                </div>
-              </aside>
+            {/* Main Marketplace Control Center */}
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-24">
+                {/* Control Shard (Sidebar) */}
+                <aside className="lg:col-span-3 space-y-20 sticky top-40 h-fit">
+                  <div className="bg-white p-12 rounded-[64px] border border-slate-100 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-12 opacity-5 text-indigo-600 group-hover:scale-110 transition-transform"><Trophy size={160} /></div>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.8em] mb-12">Identity State</h4>
+                    <p className="text-6xl font-display italic font-black text-slate-900 mb-4">{isAuthenticated ? user?.tier : 'Guest Visitor'}</p>
+                    <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden mb-8 shadow-inner">
+                      <div className="h-full bg-slate-900 rounded-full transition-all duration-1000" style={{ width: isAuthenticated ? '65%' : '0%' }} />
+                    </div>
+                    <p className="text-[9px] font-black text-slate-950 uppercase tracking-[0.3em] flex items-center gap-3">
+                      <Activity size={14} className="text-indigo-600" /> {isAuthenticated ? `${user?.points} Credits Sync'd` : 'Authenticate to sync'}
+                    </p>
+                  </div>
 
-              <div className="lg:col-span-3 space-y-40">
-                {/* AI Recommendations Section */}
-                {!searchQuery && selectedCategory === 'All' && aiRecommendations.length > 0 && (
+                  <div className="space-y-12">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.8em] mb-10 px-8">Active Nodes</h4>
+                    <div className="flex flex-col gap-4">
+                      {['All', ...categories.map(c => c.name)].map(cat => (
+                        <button 
+                          key={cat} 
+                          onClick={() => setSelectedCategory(cat)} 
+                          className={`flex items-center justify-between w-full px-12 py-7 rounded-[40px] text-sm font-black transition-all duration-500 ${
+                            selectedCategory === cat 
+                            ? 'bg-slate-950 text-white shadow-3xl scale-105 -translate-y-1' 
+                            : 'text-slate-400 hover:bg-white hover:text-slate-950 hover:shadow-xl'
+                          }`}
+                        >
+                          {cat} <ChevronRight size={18} className={selectedCategory === cat ? 'translate-x-2' : ''} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </aside>
+
+                {/* Artifact Matrix (Product Grid) */}
+                <div className="lg:col-span-9 space-y-40">
                   <section>
-                    <div className="flex items-center justify-between mb-16">
-                      <div className="flex items-center gap-6">
-                        <div className="p-6 bg-indigo-600/5 text-indigo-600 rounded-[32px] border border-indigo-600/10"><Sparkles size={32} /></div>
+                    <div className="flex items-center justify-between mb-24">
+                      <div className="flex items-center gap-8">
+                        <div className="w-16 h-16 bg-slate-100 rounded-[28px] flex items-center justify-center text-slate-900"><Command size={28} /></div>
                         <div>
-                          <h2 className="text-5xl font-black tracking-tighter text-slate-900 uppercase">Neural Selection</h2>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Tuned to your specific frequency</p>
+                          <h2 className="text-7xl font-display italic font-black tracking-tighter text-slate-900 uppercase">
+                            {selectedCategory === 'All' ? 'Matrix.' : `${selectedCategory}.`}
+                          </h2>
+                          <p className="text-xs text-slate-400 font-black uppercase tracking-[0.5em]">Synchronizing {filteredProducts.filter(p => selectedCategory === 'All' || p.category === selectedCategory).length} artifacts</p>
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                       {aiRecommendations.map(p => (
-                         <ProductCard key={`ai-${p.id}`} product={p} onAddToCart={handleAddToCart} onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} onToggleWishlist={() => {}} isWishlisted={false} />
-                       ))}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-16">
+                      {filteredProducts.filter(p => selectedCategory === 'All' || p.category === selectedCategory).map(p => (
+                        <ProductCard 
+                          key={p.id} 
+                          product={p} 
+                          onAddToCart={handleAddToCart} 
+                          onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} 
+                          onToggleWishlist={() => {}} 
+                          isWishlisted={false} 
+                        />
+                      ))}
                     </div>
                   </section>
-                )}
-
-                {/* Catalog Grid */}
-                <section>
-                   <div className="flex items-center gap-6 mb-20">
-                     <div className="p-6 bg-slate-900 text-white rounded-[32px] shadow-2xl"><Search size={32} /></div>
-                     <div>
-                       <h2 className="text-6xl font-black tracking-tighter text-slate-900 uppercase">{searchQuery ? `"${searchQuery}"` : 'Market Catalog'}</h2>
-                       <p className="text-sm text-slate-400 font-medium tracking-wide">Synthesizing {filteredProducts.length} premium artifacts</p>
-                     </div>
-                   </div>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16">
-                     {filteredProducts.filter(p => selectedCategory === 'All' || p.category === selectedCategory).map(p => (
-                       <ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} onToggleWishlist={() => {}} isWishlisted={false} />
-                     ))}
-                   </div>
-                </section>
+                </div>
               </div>
             </div>
           </div>
         )}
         
-        {/* Marketplace Sub-pages */}
         {activePage === 'product' && selectedProductId && (<ProductDetail product={MOCK_PRODUCTS.find(p => p.id === selectedProductId)!} isWishlisted={wishlist.includes(selectedProductId)} onAddToCart={handleAddToCart} onBack={() => setActivePage('home')} onToggleWishlist={() => {}} onViewProduct={setSelectedProductId} />)}
+        
         {activePage === 'cart' && (
-          <div className="max-w-5xl mx-auto py-20 px-4 animate-in">
-             <div className="flex items-center gap-10 mb-24">
-                <div className="p-10 bg-indigo-600/5 text-indigo-600 rounded-[48px] shadow-3xl border border-indigo-600/10"><ShoppingBag size={56} /></div>
-                <div><h1 className="text-8xl font-black text-slate-900 tracking-tighter italic font-display">Bag</h1><p className="text-slate-400 font-black uppercase tracking-[0.6em] text-xs">{cart.length} Identities Selected</p></div>
+          <div className="max-w-6xl mx-auto py-24 px-6 animate-reveal">
+             <div className="flex flex-col sm:flex-row items-end justify-between mb-32 gap-12">
+                <div>
+                  <h1 className="text-9xl font-display italic font-black text-slate-950 tracking-tighter leading-none mb-4">Bag.</h1>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.8em]">{cart.length} Identities Linked</p>
+                </div>
+                <button onClick={() => setActivePage('home')} className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 hover:text-slate-950 transition-colors flex items-center gap-3">
+                  <ChevronLeft size={16} /> Expand Search
+                </button>
               </div>
+              
               {cart.length === 0 ? (
-                <div className="bg-white border-4 border-dashed border-slate-100 rounded-[80px] p-48 text-center shadow-3xl">
-                  <p className="text-4xl font-black text-slate-200 mb-12 uppercase tracking-[0.4em]">Node is Empty</p>
-                  <button onClick={() => setActivePage('home')} className="bg-slate-950 text-white px-20 py-8 rounded-[40px] font-black uppercase text-sm tracking-[0.6em] hover:bg-indigo-600 transition-all shadow-3xl transform hover:scale-105">Initiate Search</button>
+                <div className="bg-white border-2 border-slate-100 rounded-[80px] p-48 text-center shadow-3xl flex flex-col items-center">
+                  <div className="p-10 bg-slate-50 rounded-full text-slate-200 mb-12"><ShoppingBag size={80} /></div>
+                  <p className="text-4xl font-display italic font-black text-slate-300 mb-12 uppercase tracking-tight">Identity Node is empty.</p>
+                  <button onClick={() => setActivePage('home')} className="bg-slate-950 text-white px-20 py-8 rounded-[40px] font-black uppercase text-sm tracking-[0.6em] hover:bg-indigo-600 transition-all shadow-3xl transform hover:scale-105">Initiate Retrieval</button>
                 </div>
               ) : (
-                <div className="space-y-16">
-                  {cartWithProducts.map((item, idx) => (
-                    <div key={idx} className="bg-white border border-slate-100 rounded-[56px] p-12 flex items-center gap-16 shadow-sm hover:shadow-3xl transition-all group">
-                      <img src={item.product.images[0]} className="w-56 h-56 object-cover rounded-[40px] shadow-3xl group-hover:scale-105 transition-transform duration-700" />
-                      <div className="flex-1">
-                        <h4 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">{item.product.title}</h4>
-                        <p className="text-lg font-black text-indigo-600 uppercase tracking-[0.5em] mb-10">${item.product.price.toFixed(2)}</p>
-                        <div className="flex items-center gap-10 bg-slate-50 w-fit p-4 rounded-[32px] border border-slate-100 shadow-inner">
-                           <button onClick={() => {}} className="p-4 hover:bg-white rounded-2xl transition-all shadow-sm"><Minus size={20} /></button>
-                           <span className="font-black text-2xl w-12 text-center">{item.quantity}</span>
-                           <button onClick={() => {}} className="p-4 hover:bg-white rounded-2xl transition-all shadow-sm"><Plus size={20} /></button>
+                <div className="space-y-24">
+                  <div className="grid grid-cols-1 gap-12">
+                    {cartWithProducts.map((item, idx) => (
+                      <div key={idx} className="bg-white rounded-[64px] p-10 flex flex-col md:flex-row items-center gap-16 shadow-2xl hover:shadow-indigo-600/5 transition-all group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-slate-50 rounded-full -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <img src={item.product.images[0]} className="w-72 h-80 object-cover rounded-[48px] shadow-3xl group-hover:scale-105 transition-transform duration-[1.5s]" alt={item.product.title} />
+                        <div className="flex-1 space-y-8">
+                          <div>
+                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.6em] block mb-4">{item.product.category}</span>
+                            <h4 className="text-5xl font-display italic font-black text-slate-900 tracking-tighter">{item.product.title}</h4>
+                          </div>
+                          <div className="flex items-center gap-12">
+                            <div>
+                                <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] mb-1">Exchange</p>
+                                <p className="text-3xl font-black text-slate-900 tracking-tighter">${item.product.price.toFixed(2)}</p>
+                            </div>
+                            <div className="flex items-center gap-8 bg-slate-50 p-4 rounded-[32px] border border-slate-100">
+                               <button className="p-3 hover:bg-white rounded-2xl transition-all shadow-sm"><Minus size={18} /></button>
+                               <span className="font-black text-2xl w-10 text-center">{item.quantity}</span>
+                               <button className="p-3 hover:bg-white rounded-2xl transition-all shadow-sm"><Plus size={18} /></button>
+                            </div>
+                          </div>
                         </div>
+                        <button className="text-slate-200 hover:text-rose-500 p-10 transition-colors"><Trash2 size={40} strokeWidth={1.5} /></button>
                       </div>
-                      <button className="text-slate-200 hover:text-rose-500 p-8 transition-colors"><Trash2 size={40} /></button>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-slate-950 text-white p-24 rounded-[80px] flex flex-col lg:flex-row justify-between items-center shadow-[0_100px_150px_-50px_rgba(2,6,23,0.5)] gap-12">
+                    <div className="text-center lg:text-left">
+                      <p className="text-indigo-400 font-black uppercase tracking-[1em] text-[10px] mb-8">Consolidated Matrix Value</p>
+                      <h3 className="text-[10rem] font-display italic font-black tracking-tighter leading-none">${cartTotal.toFixed(2)}</h3>
                     </div>
-                  ))}
-                  <div className="mt-32 bg-slate-950 text-white p-20 rounded-[80px] flex justify-between items-center shadow-[0_80px_160px_-40px_rgba(2,6,23,0.5)]">
-                    <div><p className="text-slate-500 font-black uppercase tracking-[0.8em] text-[10px] mb-8">Consolidated Payout</p><h3 className="text-[7rem] font-black tracking-tighter italic leading-none">${cartTotal.toFixed(2)}</h3></div>
-                    <button onClick={() => setActivePage('checkout')} className="bg-white text-slate-950 px-24 py-10 rounded-[48px] font-black text-3xl hover:bg-indigo-600 hover:text-white transition-all shadow-3xl hover:scale-105 active:scale-95">Checkout</button>
+                    <button onClick={() => setActivePage('checkout')} className="bg-white text-slate-950 px-24 py-12 rounded-[56px] font-black text-3xl hover:bg-indigo-600 hover:text-white transition-all shadow-3xl hover:scale-105 active:scale-95 flex items-center gap-6">
+                      Checkout. <ArrowRight size={32} />
+                    </button>
                   </div>
                 </div>
               )}
           </div>
         )}
-        {activePage === 'checkout' && <CheckoutView total={cartTotal} items={cartWithProducts} onBack={() => setActivePage('home')} onPlaceOrder={() => {}} />}
-        
-        {/* Profile/Auth handled by conditional return above main layout return */}
+
         {activePage === 'profile' && isAuthenticated && (
-          <div className="max-w-5xl mx-auto py-20 animate-in">
-             <div className="bg-white rounded-[80px] p-20 shadow-3xl border border-slate-100 flex flex-col md:flex-row items-center gap-20 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-24 opacity-5 text-indigo-600 group-hover:rotate-12 transition-transform duration-1000"><Sparkles size={300} /></div>
-                <div className="w-72 h-72 rounded-[64px] bg-slate-950 flex items-center justify-center text-white relative shadow-2xl">
-                  <UserIcon size={140} strokeWidth={1} />
-                  <div className="absolute -bottom-8 -right-8 bg-amber-400 text-slate-900 p-8 rounded-[40px] shadow-3xl border-[10px] border-white"><Trophy size={48} /></div>
+          <div className="max-w-5xl mx-auto py-24 px-6 animate-reveal">
+             <div className="bg-white rounded-[80px] p-24 shadow-3xl border border-slate-100 flex flex-col md:flex-row items-center gap-24 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-32 opacity-5 text-indigo-600 group-hover:rotate-12 transition-transform duration-1000"><Command size={400} /></div>
+                <div className="w-80 h-80 rounded-[72px] bg-slate-950 flex items-center justify-center text-white relative shadow-3xl group-hover:rotate-3 transition-transform duration-700">
+                  <UserIcon size={160} strokeWidth={1} />
+                  <div className="absolute -bottom-10 -right-10 bg-amber-400 text-slate-950 p-10 rounded-[48px] shadow-3xl border-[12px] border-white"><Trophy size={56} /></div>
                 </div>
                 <div className="flex-1 text-center md:text-left relative z-10">
-                  <div className="flex items-center gap-6 justify-center md:justify-start mb-6">
-                    <h1 className="text-7xl font-black text-slate-900 tracking-tighter">{user?.name}</h1>
-                    <span className="bg-indigo-600 text-white px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em]">Rank: {user?.tier}</span>
+                  <div className="flex flex-col sm:flex-row items-center gap-8 justify-center md:justify-start mb-10">
+                    <h1 className="text-8xl font-display italic font-black text-slate-950 tracking-tighter">{user?.name}</h1>
+                    <span className="bg-slate-950 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.5em]">Lvl: {user?.tier}</span>
                   </div>
-                  <p className="text-2xl text-slate-400 font-medium mb-16 uppercase tracking-[0.4em]">{user?.email}</p>
+                  <p className="text-3xl text-slate-400 font-medium mb-16 uppercase tracking-[0.4em] font-display italic">Identity: {user?.email}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-                    <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100 shadow-sm"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] mb-6">Available Credits</p><p className="text-6xl font-black text-indigo-600 tracking-tighter">{user?.points}</p></div>
-                    <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100 shadow-sm"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] mb-6">Identity Wallet</p><p className="text-6xl font-black text-slate-950 tracking-tighter">${user?.walletBalance.toFixed(2)}</p></div>
+                    <div className="bg-slate-50 p-12 rounded-[48px] border border-slate-100 shadow-sm hover:shadow-xl transition-all"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.8em] mb-8">Node Credits</p><p className="text-7xl font-display italic font-black text-indigo-600 tracking-tighter">{user?.points}</p></div>
+                    <div className="bg-slate-50 p-12 rounded-[48px] border border-slate-100 shadow-sm hover:shadow-xl transition-all"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.8em] mb-8">Wallet Liquidity</p><p className="text-7xl font-display italic font-black text-slate-950 tracking-tighter">${user?.walletBalance.toFixed(2)}</p></div>
                   </div>
                 </div>
               </div>
-              <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <button onClick={() => setActivePage('orders')} className="bg-white p-10 rounded-[48px] border border-slate-100 flex justify-between items-center group hover:bg-slate-950 hover:text-white transition-all shadow-lg hover:shadow-2xl">
-                   <div className="flex items-center gap-8">
-                     <div className="p-5 bg-indigo-50 text-indigo-600 rounded-[28px] group-hover:bg-white/10 group-hover:text-white transition-colors"><Clock size={32} /></div>
-                     <span className="text-2xl font-black tracking-tight">Access Logbook</span>
+              <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-10">
+                 <button onClick={() => setActivePage('orders')} className="bg-white p-12 rounded-[56px] border border-slate-100 flex justify-between items-center group hover:bg-slate-950 hover:text-white transition-all shadow-xl hover:shadow-2xl">
+                   <div className="flex items-center gap-10">
+                     <div className="p-6 bg-indigo-50 text-indigo-600 rounded-[32px] group-hover:bg-white/10 group-hover:text-white transition-colors"><Clock size={36} /></div>
+                     <span className="text-3xl font-display italic font-black tracking-tight">Access Logbook</span>
                    </div>
-                   <ChevronRight className="group-hover:translate-x-3 transition-transform" size={32} />
+                   <ChevronRight className="group-hover:translate-x-4 transition-transform" size={40} />
                  </button>
-                 <button onClick={logout} className="bg-rose-50 p-10 rounded-[48px] border border-rose-100 flex justify-between items-center group hover:bg-rose-600 hover:text-white transition-all shadow-lg">
-                   <div className="flex items-center gap-8">
-                     <div className="p-5 bg-white rounded-[28px] text-rose-600 group-hover:bg-white/20 group-hover:text-white transition-colors"><LogOut size={32} /></div>
-                     <span className="text-2xl font-black tracking-tight text-rose-600 group-hover:text-white">Close Session</span>
+                 <button onClick={logout} className="bg-rose-50 p-12 rounded-[56px] border border-rose-100 flex justify-between items-center group hover:bg-rose-600 hover:text-white transition-all shadow-xl">
+                   <div className="flex items-center gap-10">
+                     <div className="p-6 bg-white rounded-[32px] text-rose-600 group-hover:bg-white/20 group-hover:text-white transition-colors"><LogOut size={36} /></div>
+                     <span className="text-3xl font-display italic font-black tracking-tight text-rose-600 group-hover:text-white">Close Terminal</span>
                    </div>
-                   <ChevronRight />
+                   <X size={40} />
                  </button>
               </div>
           </div>
         )}
       </main>
 
+      {/* AI Hub */}
       {user?.role === 'customer' && <AIHelpDesk />}
 
-      <footer className="bg-slate-950 text-white pt-64 pb-20 mt-64 border-t border-white/5 relative overflow-hidden">
+      {/* Global Archive Footer */}
+      <footer className="bg-slate-950 text-white pt-80 pb-32 mt-80 border-t border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white/5 to-transparent" />
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-40 relative z-10">
-          <div className="md:col-span-2 space-y-20">
-            <h2 className="text-[12rem] font-black italic tracking-tighter text-indigo-600 leading-[0.7]">LUXORAA</h2>
-            <p className="text-4xl text-white/30 max-w-xl font-medium leading-relaxed italic font-display">A decentralized architecture for global luxury artifacts.</p>
+          <div className="md:col-span-2 space-y-24">
+            <h2 className="text-[16rem] font-display italic font-black tracking-tighter text-indigo-600 leading-[0.6]">LUXORAA</h2>
+            <p className="text-5xl text-white/20 max-w-2xl font-medium leading-relaxed italic font-display">
+              A decentralized artifact matrix defining the vanguard of the modern era.
+            </p>
           </div>
           <div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.8em] text-white/20 mb-16">Terminal</h4>
-            <ul className="space-y-10 text-sm font-black uppercase tracking-[0.3em] text-white/50">
-              <li className="hover:text-white cursor-pointer transition-all flex items-center gap-4" onClick={() => setActivePage('home')}>Marketplace</li>
-              <li className="hover:text-white cursor-pointer transition-all flex items-center gap-4" onClick={() => setActivePage('profile')}>Identity Hub</li>
-              {isAuthenticated && <li className="hover:text-rose-500 cursor-pointer transition-all flex items-center gap-4" onClick={logout}>De-Authenticate</li>}
+            <h4 className="text-[10px] font-black uppercase tracking-[1em] text-white/20 mb-20">Navigation</h4>
+            <ul className="space-y-12 text-sm font-black uppercase tracking-[0.4em] text-white/40">
+              <li className="hover:text-white cursor-pointer transition-all flex items-center gap-6" onClick={() => setActivePage('home')}><Command size={18} /> Marketplace</li>
+              <li className="hover:text-white cursor-pointer transition-all flex items-center gap-6" onClick={() => setActivePage('profile')}><Fingerprint size={18} /> Identity Hub</li>
+              {isAuthenticated && <li className="hover:text-rose-500 cursor-pointer transition-all flex items-center gap-6" onClick={logout}><LogOut size={18} /> Terminate</li>}
             </ul>
           </div>
           <div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.8em] text-white/20 mb-16">Operations</h4>
-            <ul className="space-y-10 text-sm font-black uppercase tracking-[0.3em] text-white/50">
-              <li className="hover:text-emerald-500 cursor-pointer flex items-center gap-6 transition-all" onClick={() => setActivePage('seller')}><Store size={18} /> Merchant</li>
-              <li className="hover:text-rose-500 cursor-pointer flex items-center gap-6 transition-all" onClick={() => setActivePage('admin')}><ShieldAlert size={18} /> Control</li>
+            <h4 className="text-[10px] font-black uppercase tracking-[1em] text-white/20 mb-20">Distribution</h4>
+            <ul className="space-y-12 text-sm font-black uppercase tracking-[0.4em] text-white/40">
+              {categories.map(c => <li key={`f-${c.name}`} className="hover:text-white cursor-pointer transition-all" onClick={() => { setSelectedCategory(c.name); window.scrollTo({ top: 2200, behavior: 'smooth' }); }}>{c.name} Shard</li>)}
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 mt-64 pt-16 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase tracking-[1em] text-white/10 relative z-10">
-           <span>&copy; 2025 LUXORAA GLOBAL SYSTEMS</span>
-           <span>RSA-4096 NODE ACTIVE</span>
+        <div className="max-w-7xl mx-auto px-6 mt-80 pt-24 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-12 text-[10px] font-black uppercase tracking-[1.5em] text-white/10 relative z-10">
+           <span>&copy; 2025 LUXORAA GLOBAL SYSTEMS CORP</span>
+           <div className="flex items-center gap-10">
+              <span className="flex items-center gap-3"><Globe size={14} /> Node: London-A2</span>
+              <span className="flex items-center gap-3"><ShieldCheck size={14} /> Protocol: RSA-4096</span>
+           </div>
         </div>
       </footer>
     </div>
