@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { MOCK_PRODUCTS } from './constants';
 import { Product, CartItem, Order, ShippingAddress, User, Seller } from './types';
@@ -11,7 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import SellerDashboard from './components/SellerDashboard';
 import LoginPage from './components/LoginPage';
 import { 
-  Sparkles, Package, ChevronRight, ArrowRight, Zap, Trophy, Clock, Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, ShieldAlert, Settings, LogOut, Store
+  Sparkles, Package, ChevronRight, ArrowRight, Zap, Trophy, Clock, Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, ShieldAlert, Settings, LogOut, Store, ArrowDown
 } from 'lucide-react';
 import { getSmartSearch, getSmartRecommendations } from './services/geminiService';
 
@@ -43,7 +42,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && user?.role === 'customer') {
       const fetchAI = async () => {
-        const recs = await getSmartRecommendations("luxury urban style, eco-conscious consumer", MOCK_PRODUCTS);
+        const recs = await getSmartRecommendations("luxury urban style, high-end lifestyle, global vanguard", MOCK_PRODUCTS);
         setAiRecommendations(recs);
       };
       fetchAI();
@@ -56,6 +55,7 @@ const App: React.FC = () => {
     if (loggedUser.role === 'admin') setActivePage('admin');
     else if (loggedUser.role === 'seller') setActivePage('seller');
     else setActivePage('home');
+    window.scrollTo(0, 0);
   };
 
   const handleLogout = () => {
@@ -131,19 +131,8 @@ const App: React.FC = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  const mockSeller: Seller = {
-    id: 's-1',
-    name: 'Rivera Designs',
-    rating: 4.8,
-    joinedDate: '2024-01-12',
-    isVerified: true,
-    commissionRate: 0.1,
-    totalSales: 4520,
-    balance: 1250
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 selection:bg-indigo-100">
+    <div className="min-h-screen bg-[#f8fafc]">
       <Navbar 
         cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
         userPoints={user?.points || 0} 
@@ -152,133 +141,259 @@ const App: React.FC = () => {
         userRole={user?.role}
       />
       
-      <main className="max-w-7xl mx-auto px-4">
+      <main className="pt-32 max-w-7xl mx-auto px-6">
         {activePage === 'admin' && user?.role === 'admin' && (
           <AdminDashboard products={MOCK_PRODUCTS} orders={orders} />
         )}
         
         {activePage === 'seller' && user?.role === 'seller' && (
-          <SellerDashboard seller={mockSeller} products={MOCK_PRODUCTS} orders={orders} />
+          <SellerDashboard seller={{ id: 's-1', name: 'Rivera Designs', rating: 4.8, joinedDate: '2024', isVerified: true, commissionRate: 0.1, totalSales: 4500, balance: 1250 }} products={MOCK_PRODUCTS} orders={orders} />
         )}
 
         {(user?.role === 'customer' || (activePage !== 'admin' && activePage !== 'seller')) && (
-          <>
+          <div className="animate-in">
             {activePage === 'home' && (
-              <div className="pb-20 animate-in fade-in duration-700">
-                <section className="relative h-[400px] sm:h-[500px] rounded-[32px] sm:rounded-[48px] overflow-hidden mt-6 mx-4 sm:mx-0 group bg-slate-900">
-                  <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1600" className="w-full h-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute inset-0 flex items-center px-6 sm:px-12">
-                    <div className="max-w-2xl space-y-6">
-                      <div className="flex gap-3">
-                        <div className="bg-indigo-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-2"><Zap size={14} /> Flash Drop</div>
-                        <div className="bg-white/10 backdrop-blur-md text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">Tier: {user?.tier} Elite</div>
-                      </div>
-                      <h2 className="text-4xl sm:text-6xl font-black text-white leading-tight">The Future of <br/> <span className="text-indigo-400">Personal Style.</span></h2>
-                      <p className="text-slate-300 text-lg max-w-md">Experience a new standard of luxury curated by our neural network.</p>
-                      <button onClick={() => window.scrollTo({ top: 800, behavior: 'smooth' })} className="bg-white text-slate-900 px-10 py-4 rounded-[20px] font-black hover:bg-indigo-500 hover:text-white transition-all shadow-2xl flex items-center gap-3">Explore The Drop <ArrowRight size={18} /></button>
+              <div className="pb-24 space-y-32">
+                {/* Hero Redesign */}
+                <section className="relative h-[650px] rounded-[64px] overflow-hidden shadow-[0_60px_100px_-20px_rgba(0,0,0,0.15)] group">
+                  <img 
+                    src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e12?auto=format&fit=crop&q=80&w=2000" 
+                    className="w-full h-full object-cover transition-transform duration-[6s] group-hover:scale-105" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/30 to-transparent flex items-center px-12 sm:px-24">
+                    <div className="max-w-4xl space-y-10">
+                       <div className="flex gap-4">
+                         <span className="glass border border-white/20 text-indigo-700 text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.4em] shadow-xl">Spring/Summer 2025</span>
+                         <span className="bg-indigo-600 text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.4em] shadow-xl">Pre-Order Now</span>
+                       </div>
+                       <h2 className="text-9xl font-display italic text-white leading-none tracking-tighter">The Art of <br/> <span className="opacity-40 font-sans tracking-tight not-italic">Refinement.</span></h2>
+                       <p className="text-xl text-white/70 max-w-lg leading-relaxed font-medium">Global curation powered by neural intelligence. Redefining high-fidelity commerce for the elite vanguard.</p>
+                       <div className="flex gap-6 items-center">
+                         <button onClick={() => window.scrollTo({ top: 850, behavior: 'smooth' })} className="bg-white text-black px-12 py-5 rounded-[28px] font-black text-lg hover:bg-indigo-600 hover:text-white transition-all shadow-3xl flex items-center gap-4 group/btn">
+                           Shop Collection <ArrowRight className="group-hover/btn:translate-x-2 transition-transform" />
+                         </button>
+                         <button className="text-white font-black uppercase text-[10px] tracking-widest flex items-center gap-2 group/scroll">
+                            Scroll Down <ArrowDown size={14} className="group-hover/scroll:translate-y-1 transition-transform" />
+                         </button>
+                       </div>
                     </div>
                   </div>
                 </section>
 
-                <div className="mt-20 grid grid-cols-1 lg:grid-cols-4 gap-16">
-                  <aside className="space-y-12">
-                    <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl">
-                       <div className="flex justify-between items-center mb-6">
-                         <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Tier Status</h4>
-                         <Trophy size={20} className="text-amber-500" />
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-24">
+                  <aside className="space-y-20">
+                    <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-3xl relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 p-10 opacity-5 text-indigo-600 group-hover:scale-110 transition-transform"><Trophy size={120} /></div>
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-10">Elite Identity</h4>
+                       <p className="text-4xl font-display italic font-black text-slate-900 mb-2">{user?.tier}</p>
+                       <div className="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden mb-6"><div className="h-full bg-indigo-600 rounded-full" style={{ width: '65%' }} /></div>
+                       <div className="flex items-center gap-2">
+                         <div className="p-1 bg-amber-400 rounded-full"><Zap size={10} fill="currentColor" /></div>
+                         <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">350 pts to Platinum rank</p>
                        </div>
-                       <p className="text-2xl font-black text-slate-900 mb-2">{user?.tier}</p>
-                       <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-4"><div className="h-full bg-indigo-600 rounded-full" style={{ width: '65%' }} /></div>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">350 Points to Platinum</p>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 px-2">Marketplace Filters</h4>
-                      <div className="space-y-2">
-                        {['All', 'Clothes', 'Shoes', 'Toys', 'Accessories'].map(cat => (
-                          <button key={cat} onClick={() => setSelectedCategory(cat)} className={`flex items-center justify-between w-full px-5 py-3 rounded-2xl text-sm font-bold transition-all ${selectedCategory === cat ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-slate-100'}`}>{cat}{selectedCategory === cat && <ChevronRight size={14} />}</button>
-                        ))}
-                      </div>
+
+                    <div className="space-y-8">
+                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-10 px-4">Market Nodes</h4>
+                       <div className="grid grid-cols-1 gap-4">
+                         {['All', 'Clothes', 'Shoes', 'Toys', 'Accessories'].map(cat => (
+                           <button 
+                             key={cat} 
+                             onClick={() => setSelectedCategory(cat)} 
+                             className={`flex items-center justify-between w-full px-10 py-5 rounded-[28px] text-sm font-black transition-all ${
+                               selectedCategory === cat 
+                               ? 'bg-slate-950 text-white shadow-3xl scale-[1.05] z-10' 
+                               : 'text-slate-400 hover:bg-white hover:text-slate-950 hover:shadow-xl'
+                             }`}
+                           >
+                             {cat} <ChevronRight size={16} />
+                           </button>
+                         ))}
+                       </div>
                     </div>
                   </aside>
-                  <div className="lg:col-span-3 space-y-16">
+
+                  <div className="lg:col-span-3 space-y-32">
                     {!searchQuery && selectedCategory === 'All' && aiRecommendations.length > 0 && (
-                      <section className="animate-in fade-in slide-in-from-top-4 duration-1000">
-                         <div className="flex items-center gap-3 mb-8"><div className="p-3 bg-indigo-100 text-indigo-600 rounded-2xl"><Sparkles size={24} /></div><div><h2 className="text-2xl font-black text-slate-900">Recommended For You</h2><p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Neural Curation</p></div></div>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">{aiRecommendations.map(p => (<ProductCard key={`ai-${p.id}`} product={p} onAddToCart={handleAddToCart} onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} onToggleWishlist={toggleWishlist} isWishlisted={wishlist.includes(p.id)} />))}</div>
+                      <section className="animate-in">
+                         <div className="flex items-center justify-between mb-16">
+                           <div className="flex items-center gap-5">
+                             <div className="p-5 bg-indigo-600/5 text-indigo-600 rounded-[32px] border border-indigo-600/10 shadow-xl shadow-indigo-600/5"><Sparkles size={32} /></div>
+                             <div>
+                               <h2 className="text-4xl font-black tracking-tighter text-slate-900">Neural Selection</h2>
+                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Optimized for your aesthetic</p>
+                             </div>
+                           </div>
+                           <button className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-slate-950 transition-colors flex items-center gap-2">
+                             Refresh AI Agent <Zap size={14} />
+                           </button>
+                         </div>
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                           {aiRecommendations.map(p => (
+                             <ProductCard 
+                               key={`ai-${p.id}`} 
+                               product={p} 
+                               onAddToCart={handleAddToCart} 
+                               onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} 
+                               onToggleWishlist={toggleWishlist} 
+                               isWishlisted={wishlist.includes(p.id)} 
+                             />
+                           ))}
+                         </div>
                       </section>
                     )}
+
                     <section>
-                       <div className="flex items-center gap-3 mb-10"><div className="p-3 bg-slate-100 text-slate-900 rounded-2xl"><Search size={24} /></div><div><h2 className="text-3xl font-black text-slate-900">{searchQuery ? `Search: "${searchQuery}"` : 'Global Marketplace'}</h2><p className="text-sm text-slate-400 font-medium">{filteredProducts.length} items discovered</p></div></div>
-                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">{filteredProducts.filter(p => selectedCategory === 'All' || p.category === selectedCategory).map(p => (<ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} onToggleWishlist={toggleWishlist} isWishlisted={wishlist.includes(p.id)} />))}</div>
+                       <div className="flex items-center gap-5 mb-20">
+                         <div className="p-5 bg-slate-100 text-slate-950 rounded-[32px] shadow-xl"><Search size={32} /></div>
+                         <div>
+                           <h2 className="text-5xl font-black tracking-tighter text-slate-900">
+                             {searchQuery ? `"${searchQuery}"` : 'Market Catalog'}
+                           </h2>
+                           <p className="text-sm text-slate-400 font-medium tracking-wide">
+                             {filteredProducts.length} premium artifacts discovered
+                           </p>
+                         </div>
+                       </div>
+                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16">
+                         {filteredProducts
+                           .filter(p => selectedCategory === 'All' || p.category === selectedCategory)
+                           .map(p => (
+                             <ProductCard 
+                               key={p.id} 
+                               product={p} 
+                               onAddToCart={handleAddToCart} 
+                               onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} 
+                               onToggleWishlist={toggleWishlist} 
+                               isWishlisted={wishlist.includes(p.id)} 
+                             />
+                           ))}
+                       </div>
                     </section>
                   </div>
                 </div>
               </div>
             )}
+            
+            {/* Cart, Profile, etc. pages are wrapped in the same grid/spacing as above for a unified feel */}
             {activePage === 'cart' && (
-              <div className="max-w-4xl mx-auto py-20 px-4">
-                <div className="flex items-center gap-4 mb-12"><div className="p-4 bg-indigo-100 text-indigo-600 rounded-3xl"><ShoppingBag size={32} /></div><div><h1 className="text-4xl font-black text-slate-900">Shopping Bag</h1><p className="text-slate-500 font-medium">{cart.length} items</p></div></div>
+              <div className="max-w-5xl mx-auto py-12 px-4 animate-in">
+                <div className="flex items-center gap-8 mb-20">
+                  <div className="p-8 bg-indigo-600/5 text-indigo-600 rounded-[40px] shadow-2xl border border-indigo-600/10"><ShoppingBag size={48} /></div>
+                  <div><h1 className="text-6xl font-black text-slate-900 tracking-tighter">Shopping Bag</h1><p className="text-slate-400 font-black uppercase tracking-[0.5em] text-xs">{cart.length} Identity Artifacts Selected</p></div>
+                </div>
                 {cart.length === 0 ? (
-                  <div className="bg-white border-2 border-dashed border-slate-200 rounded-[40px] p-20 text-center"><p className="text-xl font-bold text-slate-400 mb-6">Your bag is empty.</p><button onClick={() => setActivePage('home')} className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black">Explore</button></div>
+                  <div className="bg-white border-2 border-dashed border-slate-200 rounded-[80px] p-40 text-center shadow-3xl">
+                    <p className="text-3xl font-black text-slate-300 mb-10 uppercase tracking-[0.3em]">Selection is Empty</p>
+                    <button onClick={() => setActivePage('home')} className="bg-slate-950 text-white px-16 py-6 rounded-[32px] font-black uppercase text-sm tracking-[0.4em] hover:bg-indigo-600 transition-all shadow-3xl">Begin Discovery</button>
+                  </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-12">
                     {cartWithProducts.map((item, idx) => (
-                      <div key={idx} className="bg-white border border-slate-100 rounded-[32px] p-6 flex items-center gap-6">
-                        <img src={item.product.images[0]} className="w-20 h-20 object-cover rounded-xl" />
-                        <div className="flex-1"><h4 className="font-bold text-slate-900">{item.product.title}</h4><p className="font-black text-indigo-600">${item.product.price.toFixed(2)}</p></div>
-                        <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl">
-                          <button onClick={() => updateCartQuantity(item.productId, -1)} className="p-2"><Minus size={16} /></button>
-                          <span className="font-black">{item.quantity}</span>
-                          <button onClick={() => updateCartQuantity(item.productId, 1)} className="p-2"><Plus size={16} /></button>
+                      <div key={idx} className="bg-white border border-slate-100 rounded-[48px] p-10 flex items-center gap-12 shadow-sm hover:shadow-2xl transition-all group">
+                        <img src={item.product.images[0]} className="w-48 h-48 object-cover rounded-[32px] shadow-2xl group-hover:scale-105 transition-transform duration-700" />
+                        <div className="flex-1">
+                          <h4 className="text-2xl font-black text-slate-900 mb-2">{item.product.title}</h4>
+                          <p className="text-sm font-black text-indigo-600 uppercase tracking-[0.4em] mb-6">${item.product.price.toFixed(2)}</p>
+                          <div className="flex items-center gap-8 bg-slate-50 w-fit p-3 rounded-[24px] border border-slate-100">
+                             <button onClick={() => updateCartQuantity(item.productId, -1)} className="p-3 hover:bg-white rounded-xl transition-all shadow-sm"><Minus size={18} /></button>
+                             <span className="font-black text-xl w-10 text-center">{item.quantity}</span>
+                             <button onClick={() => updateCartQuantity(item.productId, 1)} className="p-3 hover:bg-white rounded-xl transition-all shadow-sm"><Plus size={18} /></button>
+                          </div>
                         </div>
-                        <button onClick={() => removeFromCart(item.productId)} className="text-red-400 p-2"><Trash2 size={20} /></button>
+                        <button onClick={() => removeFromCart(item.productId)} className="text-slate-200 hover:text-rose-500 p-6 transition-colors group/trash"><Trash2 size={32} className="group-hover/trash:scale-110 transition-transform" /></button>
                       </div>
                     ))}
-                    <div className="mt-12 bg-slate-900 text-white p-8 rounded-[40px] flex justify-between items-center">
-                      <div><p className="text-slate-400 font-bold uppercase text-xs mb-1">Total</p><h3 className="text-4xl font-black">${cartTotal.toFixed(2)}</h3></div>
-                      <button onClick={() => setActivePage('checkout')} className="bg-indigo-600 px-12 py-5 rounded-3xl font-black text-lg">Checkout</button>
+                    <div className="mt-24 bg-slate-950 text-white p-16 rounded-[80px] flex justify-between items-center shadow-[0_60px_100px_-20px_rgba(2,6,23,0.4)]">
+                      <div><p className="text-slate-500 font-black uppercase tracking-[0.6em] text-[10px] mb-6">Total Payout Projection</p><h3 className="text-8xl font-black tracking-tighter">${cartTotal.toFixed(2)}</h3></div>
+                      <button onClick={() => setActivePage('checkout')} className="bg-white text-slate-950 px-20 py-8 rounded-[40px] font-black text-2xl hover:bg-indigo-600 hover:text-white transition-all shadow-2xl transform hover:scale-105 active:scale-95">Initiate Checkout</button>
                     </div>
                   </div>
                 )}
               </div>
             )}
+            
             {activePage === 'profile' && (
-              <div className="max-w-4xl mx-auto py-20 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="bg-white rounded-[48px] p-12 shadow-xl border border-slate-100 flex flex-col md:flex-row items-center gap-12">
-                  <div className="w-48 h-48 rounded-[32px] bg-slate-900 flex items-center justify-center text-white relative">
-                    <UserIcon size={80} strokeWidth={1} />
-                    <div className="absolute -bottom-4 -right-4 bg-amber-400 text-slate-900 p-4 rounded-3xl shadow-lg border-4 border-white"><Trophy size={24} /></div>
+              <div className="max-w-5xl mx-auto py-12 animate-in">
+                <div className="bg-white rounded-[80px] p-20 shadow-3xl border border-white flex flex-col md:flex-row items-center gap-20 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-24 opacity-5 text-indigo-600 group-hover:rotate-12 transition-transform duration-1000"><Sparkles size={300} /></div>
+                  <div className="w-72 h-72 rounded-[64px] bg-slate-950 flex items-center justify-center text-white relative shadow-[0_40px_80px_-20px_rgba(2,6,23,0.3)]">
+                    <UserIcon size={140} strokeWidth={1} />
+                    <div className="absolute -bottom-8 -right-8 bg-amber-400 text-slate-950 p-8 rounded-[40px] shadow-3xl border-[10px] border-white"><Trophy size={48} /></div>
                   </div>
-                  <div className="flex-1 text-center md:text-left">
-                    <div className="flex items-center gap-3 justify-center md:justify-start mb-2"><h1 className="text-4xl font-black text-slate-900">{user?.name}</h1><span className="bg-indigo-100 text-indigo-700 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{user?.tier} Member</span></div>
-                    <p className="text-slate-400 font-bold mb-8">{user?.email}</p>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Luxoraa Credits</p><p className="text-2xl font-black text-indigo-600">{user?.points}</p></div>
-                      <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Wallet Balance</p><p className="text-2xl font-black text-slate-900">${user?.walletBalance.toFixed(2)}</p></div>
+                  <div className="flex-1 text-center md:text-left relative z-10">
+                    <div className="flex items-center gap-6 justify-center md:justify-start mb-6">
+                      <h1 className="text-7xl font-black text-slate-900 tracking-tighter">{user?.name}</h1>
+                      <span className="bg-indigo-600 text-white px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-xl">Rank: {user?.tier}</span>
+                    </div>
+                    <p className="text-2xl text-slate-400 font-medium mb-16 uppercase tracking-[0.4em]">{user?.email}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                      <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100 shadow-sm"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] mb-6">Available Credits</p><p className="text-6xl font-black text-indigo-600 tracking-tighter">{user?.points}</p></div>
+                      <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100 shadow-sm"><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] mb-6">Identity Wallet</p><p className="text-6xl font-black text-slate-950 tracking-tighter">${user?.walletBalance.toFixed(2)}</p></div>
                     </div>
                   </div>
                 </div>
-                <div className="mt-12 grid grid-cols-1 gap-4">
-                  <button onClick={() => setActivePage('orders')} className="w-full bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center group hover:border-indigo-600 transition-all"><div className="flex items-center gap-4"><div className="p-3 bg-slate-100 rounded-2xl text-slate-900"><Clock size={20} /></div><span className="font-bold text-slate-900">Order History</span></div><ChevronRight size={20} className="text-slate-400 group-hover:translate-x-1 transition-transform" /></button>
-                  <button onClick={handleLogout} className="w-full bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center group hover:border-rose-600 transition-all text-rose-600 font-bold"><div className="flex items-center gap-4"><div className="p-3 bg-rose-50 rounded-2xl text-rose-600"><LogOut size={20} /></div>Sign Out</div><ChevronRight size={20} /></button>
+                <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+                   <button onClick={() => setActivePage('orders')} className="bg-white p-10 rounded-[48px] border border-slate-100 flex justify-between items-center group hover:bg-slate-950 hover:text-white transition-all shadow-lg hover:shadow-2xl">
+                     <div className="flex items-center gap-8">
+                       <div className="p-5 bg-indigo-50 text-indigo-600 rounded-[28px] group-hover:bg-white/10 group-hover:text-white transition-colors"><Clock size={32} /></div>
+                       <span className="text-2xl font-black tracking-tight">Access Logbook</span>
+                     </div>
+                     <ChevronRight className="group-hover:translate-x-3 transition-transform" size={32} />
+                   </button>
+                   <button onClick={handleLogout} className="bg-rose-50 p-10 rounded-[48px] border border-rose-100 flex justify-between items-center group hover:bg-rose-600 hover:text-white transition-all shadow-lg hover:shadow-2xl">
+                     <div className="flex items-center gap-8">
+                       <div className="p-5 bg-white rounded-[28px] text-rose-600 group-hover:bg-white/20 group-hover:text-white transition-colors"><LogOut size={32} /></div>
+                       <span className="text-2xl font-black tracking-tight text-rose-600 group-hover:text-white">Close Session</span>
+                     </div>
+                     <ChevronRight className="group-hover:translate-x-3 transition-transform" size={32} />
+                   </button>
                 </div>
               </div>
             )}
-            {activePage === 'wishlist' && <div className="max-w-7xl mx-auto py-20 px-4"><h1 className="text-4xl font-black mb-12">Your Wishlist</h1><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">{MOCK_PRODUCTS.filter(p => wishlist.includes(p.id)).map(p => (<ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} onToggleWishlist={toggleWishlist} isWishlisted={true} />))}</div></div>}
+            
+            {activePage === 'wishlist' && <div className="py-12"><div className="flex items-center gap-8 mb-20"><div className="p-8 bg-rose-50 text-rose-500 rounded-[40px] shadow-2xl"><Heart size={48} fill="currentColor" /></div><h1 className="text-6xl font-black tracking-tighter">Curated Desires</h1></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">{MOCK_PRODUCTS.filter(p => wishlist.includes(p.id)).map(p => (<ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} onViewDetails={(id) => { setSelectedProductId(id); setActivePage('product'); }} onToggleWishlist={toggleWishlist} isWishlisted={true} />))}</div></div>}
             {activePage === 'product' && selectedProductId && (<ProductDetail product={MOCK_PRODUCTS.find(p => p.id === selectedProductId)!} isWishlisted={wishlist.includes(selectedProductId)} onAddToCart={handleAddToCart} onBack={() => setActivePage('home')} onToggleWishlist={toggleWishlist} onViewProduct={setSelectedProductId} />)}
             {activePage === 'checkout' && <CheckoutView total={cartTotal} items={cartWithProducts} onBack={() => setActivePage('home')} onPlaceOrder={placeOrder} />}
-            {activePage === 'orders' && <div className="max-w-4xl mx-auto py-20 px-4"><h1 className="text-4xl font-black mb-12">Order History</h1><div className="space-y-6">{orders.map(o => (<div key={o.id} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex justify-between items-center"><div><p className="text-xs font-black text-slate-400 uppercase tracking-widest">Order #{o.id}</p><p className="font-bold text-slate-900">{new Date(o.date).toLocaleDateString()}</p></div><div className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-xs font-black uppercase">{o.status}</div><div className="text-right"><p className="text-2xl font-black text-indigo-600">${o.totalAmount.toFixed(2)}</p></div></div>))}</div></div>}
-          </>
+            {activePage === 'orders' && <div className="py-12 max-w-5xl mx-auto"><div className="flex items-center gap-8 mb-20"><div className="p-8 bg-indigo-600/5 text-indigo-600 rounded-[40px] shadow-2xl border border-indigo-600/10"><Package size={48} /></div><h1 className="text-6xl font-black tracking-tighter">Archive History</h1></div><div className="space-y-10">{orders.map(o => (<div key={o.id} className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl hover:shadow-2xl transition-all flex justify-between items-center"><div><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-3">Serial ID: {o.id}</p><p className="font-black text-2xl text-slate-900">{new Date(o.date).toLocaleDateString()}</p></div><div className="bg-emerald-100 text-emerald-700 px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-sm">{o.status}</div><div className="text-right"><p className="text-4xl font-black text-indigo-600 tracking-tighter">${o.totalAmount.toFixed(2)}</p></div></div>))}</div></div>}
+          </div>
         )}
       </main>
       
       {user?.role === 'customer' && <AIHelpDesk />}
       
-      <footer className="bg-slate-900 text-white pt-24 pb-10 mt-32">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
-          <div className="sm:col-span-2"><h2 className="text-3xl font-black italic tracking-tighter mb-8 text-indigo-400">LUXORAA GLOBAL</h2><p className="text-slate-400 max-w-sm">Premium AI-powered curation for the modern global consumer.</p></div>
-          <div><h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-8">Quick Links</h4><ul className="space-y-4 text-sm font-bold"><li className="hover:text-indigo-400 cursor-pointer" onClick={() => setActivePage('home')}>Shop All</li><li className="hover:text-indigo-400 cursor-pointer" onClick={() => setActivePage('profile')}>My Account</li><li className="hover:text-indigo-400 cursor-pointer text-rose-400" onClick={handleLogout}>Sign Out</li></ul></div>
-          <div><h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-8">Connect</h4><ul className="space-y-4 text-sm font-bold"><li className="hover:text-emerald-400 cursor-pointer flex items-center gap-2" onClick={() => setActivePage('seller')}><Store size={14} /> Sell with Luxoraa</li><li className="hover:text-rose-400 cursor-pointer flex items-center gap-2" onClick={() => setActivePage('admin')}><ShieldAlert size={14} /> Staff Terminal</li></ul></div>
+      <footer className="bg-slate-950 text-white pt-64 pb-20 mt-64 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-32">
+          <div className="md:col-span-2 space-y-16">
+            <h2 className="text-8xl font-black italic tracking-tighter text-indigo-600 leading-none">LUXORAA</h2>
+            <p className="text-3xl text-white/40 max-w-xl font-medium leading-relaxed italic font-display">
+              Neural curation for the modern global vanguard. Re-defining high-fidelity commerce at every scale.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/20 mb-12">Architecture</h4>
+            <ul className="space-y-8 text-sm font-black uppercase tracking-widest text-white/60">
+              <li className="hover:text-white cursor-pointer transition-all flex items-center gap-2" onClick={() => setActivePage('home')}><ChevronRight size={14} className="text-indigo-600" /> Marketplace Nodes</li>
+              <li className="hover:text-white cursor-pointer transition-all flex items-center gap-2" onClick={() => setActivePage('profile')}><ChevronRight size={14} className="text-indigo-600" /> Identity Management</li>
+              <li className="hover:text-rose-500 cursor-pointer transition-all flex items-center gap-2" onClick={handleLogout}><ChevronRight size={14} className="text-rose-600" /> Terminate Session</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.6em] text-white/20 mb-12">Supply Chain</h4>
+            <ul className="space-y-8 text-sm font-black uppercase tracking-widest text-white/60">
+              <li className="hover:text-emerald-500 cursor-pointer flex items-center gap-4 transition-all" onClick={() => setActivePage('seller')}><Store size={16} /> Merchant Terminal</li>
+              <li className="hover:text-rose-500 cursor-pointer flex items-center gap-4 transition-all" onClick={() => setActivePage('admin')}><ShieldAlert size={16} /> Ops Command</li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 mt-64 pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-8 text-[9px] font-black uppercase tracking-[0.8em] text-white/10">
+           <span>&copy; 2025 LUXORAA GLOBAL PROTOCOL</span>
+           <div className="flex gap-10">
+             <span className="hover:text-white/40 cursor-pointer">Privacy System</span>
+             <span className="hover:text-white/40 cursor-pointer">Legal Terms</span>
+           </div>
+           <span>0xNeural Node: Active</span>
         </div>
       </footer>
     </div>
