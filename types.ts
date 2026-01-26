@@ -1,102 +1,33 @@
 
-export type Category = 'Clothes' | 'Toys' | 'Shoes' | 'Accessories' | 'Electronics' | 'Home';
-
-export type LoyaltyTier = 'Silver' | 'Gold' | 'Platinum';
-
-export interface Seller {
-  id: string;
-  name: string;
-  rating: number;
-  joinedDate: string;
-  isVerified: boolean;
-  commissionRate: number;
+export enum ViewType {
+  HOME = 'HOME',
+  CONCIERGE = 'CONCIERGE',
+  VISUALS = 'VISUALS',
+  CINEMA = 'CINEMA',
+  VOICE = 'VOICE',
+  LIFESTYLE = 'LIFESTYLE'
 }
 
-export interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  date: string;
-  sentiment?: 'Positive' | 'Neutral' | 'Negative'; // AI generated
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+  timestamp: Date;
+  sources?: Array<{ title: string; uri: string }>;
 }
 
-export interface Product {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: Category;
-  images: string[];
-  stock: number;
-  rating: number;
-  reviewsCount: number;
-  tags: string[];
-  colors?: string[];
-  sizes?: string[];
-  material?: string;
-  sellerId: string;
-  seller?: Seller;
-  aiDescription?: string;
-  dynamicPrice?: number;
+export interface LifestyleData {
+  category: string;
+  value: number;
 }
 
-export interface CartItem {
-  productId: string;
-  quantity: number;
-  selectedSize?: string;
-  selectedColor?: string;
+export interface GeneratedImage {
+  url: string;
+  prompt: string;
+  timestamp: Date;
 }
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'customer' | 'admin' | 'seller';
-  avatar?: string;
-  points: number;
-  tier: LoyaltyTier;
-  walletBalance: number;
-}
-
-export type OrderStatus = 'Placed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Returned';
-
-export interface ShippingAddress {
-  fullName: string;
-  address: string;
-  city: string;
-  zipCode: string;
-  phone: string;
-  latLng?: { lat: number; lng: number };
-}
-
-export interface Order {
-  id: string;
-  userId: string;
-  items: CartItem[];
-  totalAmount: number;
-  status: OrderStatus;
-  date: string;
-  trackingNumber: string;
-  paymentMethod: string;
-  shippingAddress: ShippingAddress;
-  fraudScore: number; // AI detection 0-100
-  isAIGeneratedRecovery?: boolean;
-}
-
-export interface AuditLog {
-  id: string;
-  adminId: string;
-  action: string;
-  details: string;
-  timestamp: string;
-}
-
-export interface AnalyticsData {
-  salesVolume: number[];
-  labels: string[];
-  roi: number;
-  cac: number;
-  churnRate: number;
+export interface GeneratedVideo {
+  url: string;
+  prompt: string;
+  timestamp: Date;
 }
