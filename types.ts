@@ -3,6 +3,8 @@ export type Category = 'Clothes' | 'Toys' | 'Shoes' | 'Accessories' | 'Electroni
 
 export type LoyaltyTier = 'Silver' | 'Gold' | 'Platinum';
 
+export type UserStatus = 'Active' | 'Suspended' | 'Pending Verification';
+
 export interface Seller {
   id: string;
   name: string;
@@ -10,6 +12,8 @@ export interface Seller {
   joinedDate: string;
   isVerified: boolean;
   commissionRate: number;
+  totalSales: number;
+  balance: number;
 }
 
 export interface Review {
@@ -58,6 +62,9 @@ export interface User {
   points: number;
   tier: LoyaltyTier;
   walletBalance: number;
+  status: UserStatus;
+  lastLogin: string;
+  mfaEnabled: boolean;
 }
 
 export type OrderStatus = 'Placed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Returned';
@@ -87,10 +94,13 @@ export interface Order {
 
 export interface AuditLog {
   id: string;
-  adminId: string;
+  actorId: string;
+  actorName: string;
   action: string;
+  target: string;
   details: string;
   timestamp: string;
+  severity: 'Info' | 'Warning' | 'Critical';
 }
 
 export interface AnalyticsData {

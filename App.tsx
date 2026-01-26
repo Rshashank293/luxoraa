@@ -1,15 +1,17 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { MOCK_PRODUCTS } from './constants';
-import { Product, CartItem, Order, ShippingAddress, User } from './types';
+import { Product, CartItem, Order, ShippingAddress, User, Seller } from './types';
 import Navbar from './components/Navbar';
 import ProductCard from './components/ProductCard';
 import ProductDetail from './components/ProductDetail';
 import CheckoutView from './components/CheckoutView';
 import AIHelpDesk from './components/AIHelpDesk';
 import AdminDashboard from './components/AdminDashboard';
+import SellerDashboard from './components/SellerDashboard';
 import LoginPage from './components/LoginPage';
 import { 
-  Sparkles, Package, ChevronRight, ArrowRight, Zap, Trophy, Clock, Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, ShieldAlert, Settings, LogOut
+  Sparkles, Package, ChevronRight, ArrowRight, Zap, Trophy, Clock, Search, ShoppingBag, Heart, Trash2, Plus, Minus, User as UserIcon, ShieldAlert, Settings, LogOut, Store
 } from 'lucide-react';
 import { getSmartSearch, getSmartRecommendations } from './services/geminiService';
 
@@ -51,7 +53,9 @@ const App: React.FC = () => {
   const handleLogin = (loggedUser: User) => {
     setUser(loggedUser);
     setIsAuthenticated(true);
-    setActivePage(loggedUser.role === 'admin' ? 'admin' : 'home');
+    if (loggedUser.role === 'admin') setActivePage('admin');
+    else if (loggedUser.role === 'seller') setActivePage('seller');
+    else setActivePage('home');
   };
 
   const handleLogout = () => {
@@ -127,6 +131,17 @@ const App: React.FC = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  const mockSeller: Seller = {
+    id: 's-1',
+    name: 'Rivera Designs',
+    rating: 4.8,
+    joinedDate: '2024-01-12',
+    isVerified: true,
+    commissionRate: 0.1,
+    totalSales: 4520,
+    balance: 1250
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 selection:bg-indigo-100">
       <Navbar 
@@ -138,9 +153,15 @@ const App: React.FC = () => {
       />
       
       <main className="max-w-7xl mx-auto px-4">
-        {activePage === 'admin' && user?.role === 'admin' ? (
+        {activePage === 'admin' && user?.role === 'admin' && (
           <AdminDashboard products={MOCK_PRODUCTS} orders={orders} />
-        ) : (
+        )}
+        
+        {activePage === 'seller' && user?.role === 'seller' && (
+          <SellerDashboard seller={mockSeller} products={MOCK_PRODUCTS} orders={orders} />
+        )}
+
+        {(user?.role === 'customer' || (activePage !== 'admin' && activePage !== 'seller')) && (
           <>
             {activePage === 'home' && (
               <div className="pb-20 animate-in fade-in duration-700">
@@ -257,6 +278,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
           <div className="sm:col-span-2"><h2 className="text-3xl font-black italic tracking-tighter mb-8 text-indigo-400">LUXORAA GLOBAL</h2><p className="text-slate-400 max-w-sm">Premium AI-powered curation for the modern global consumer.</p></div>
           <div><h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-8">Quick Links</h4><ul className="space-y-4 text-sm font-bold"><li className="hover:text-indigo-400 cursor-pointer" onClick={() => setActivePage('home')}>Shop All</li><li className="hover:text-indigo-400 cursor-pointer" onClick={() => setActivePage('profile')}>My Account</li><li className="hover:text-indigo-400 cursor-pointer text-rose-400" onClick={handleLogout}>Sign Out</li></ul></div>
+          <div><h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-8">Connect</h4><ul className="space-y-4 text-sm font-bold"><li className="hover:text-emerald-400 cursor-pointer flex items-center gap-2" onClick={() => setActivePage('seller')}><Store size={14} /> Sell with Luxoraa</li><li className="hover:text-rose-400 cursor-pointer flex items-center gap-2" onClick={() => setActivePage('admin')}><ShieldAlert size={14} /> Staff Terminal</li></ul></div>
         </div>
       </footer>
     </div>
