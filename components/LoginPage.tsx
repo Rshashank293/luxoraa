@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Eye, EyeOff, Lock, Mail, ArrowRight, Sparkles, Loader2, 
-  ShieldCheck, User as UserIcon, Chrome, Apple, Store, Key, Fingerprint, Globe, ShieldAlert 
+  ShieldCheck, User as UserIcon, Chrome, Apple, Store, Key, Fingerprint, Globe, ShieldAlert,
+  Terminal, ShieldX
 } from 'lucide-react';
 import { User as UserType } from '../types';
 
@@ -19,157 +19,185 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const handleAuth = (selectedRole: 'customer' | 'admin' | 'seller', selectedEmail: string) => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    // Simulate Server-side verification
-    setTimeout(() => {
-      if (password.length < 4) {
-        setError('Secret Passphrase must be at least 4 characters for node authorization.');
-        setIsLoading(false);
-        return;
+    // Simulate API request to Serverless Auth Endpoint
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    try {
+      if (password.length < 6) {
+        throw new Error("Security protocol requires min. 6 characters for secret passphrase.");
+      }
+
+      if (email === 'fail@luxoraa.com') {
+        throw new Error("Unauthorized access attempt. Endpoint blocked.");
       }
 
       let mockUser: UserType;
-      if (selectedRole === 'admin') {
-        mockUser = { id: 'a-1', name: 'Jordan Vance', email: selectedEmail || 'ops@luxoraa.com', role: 'admin', points: 0, tier: 'Platinum', walletBalance: 0, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true };
-      } else if (selectedRole === 'seller') {
-        mockUser = { id: 's-1', name: name || 'Rivera Designs', email: selectedEmail || 'seller@luxoraa.com', role: 'seller', points: 120, tier: 'Gold', walletBalance: 1250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true };
+      if (role === 'admin') {
+        mockUser = { id: 'a-1', name: 'Jordan Vance', email: email || 'ops@luxoraa.com', role: 'admin', points: 0, tier: 'Platinum', walletBalance: 0, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true };
+      } else if (role === 'seller') {
+        mockUser = { id: 's-1', name: name || 'Rivera Designs', email: email || 'seller@luxoraa.com', role: 'seller', points: 120, tier: 'Gold', walletBalance: 1250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: true };
       } else {
-        mockUser = { id: 'u-1', name: name || 'Alex Rivera', email: selectedEmail || 'alex@luxoraa.com', role: 'customer', points: 450, tier: 'Gold', walletBalance: 250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: false };
+        mockUser = { id: 'u-1', name: name || 'Alex Rivera', email: email || 'alex@luxoraa.com', role: 'customer', points: 450, tier: 'Gold', walletBalance: 250.00, status: 'Active', lastLogin: new Date().toISOString(), mfaEnabled: false };
       }
       
-      setIsLoading(false);
       onLogin(mockUser);
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
   };
 
-  const roleStyles = {
-    customer: { primary: 'bg-black', accent: 'text-indigo-600', bg: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e12?auto=format&fit=crop&q=80&w=1200' },
-    admin: { primary: 'bg-rose-600', accent: 'text-rose-600', bg: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200' },
-    seller: { primary: 'bg-emerald-600', accent: 'text-emerald-600', bg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200' }
-  };
-
-  const activeStyle = roleStyles[role];
+  const theme = {
+    customer: { main: 'bg-black', accent: 'text-indigo-600', glow: 'shadow-indigo-600/20', bg: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e12?auto=format&fit=crop&q=80&w=1200' },
+    admin: { main: 'bg-rose-600', accent: 'text-rose-600', glow: 'shadow-rose-600/20', bg: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200' },
+    seller: { main: 'bg-emerald-600', accent: 'text-emerald-600', glow: 'shadow-emerald-600/20', bg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200' }
+  }[role];
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-white overflow-hidden selection:bg-indigo-500/20">
-      {/* Cinematic Identity Portal */}
-      <div className="hidden lg:flex relative w-1/2 overflow-hidden bg-slate-900">
-        <div className={`absolute inset-0 z-10 transition-colors duration-1000 ${role === 'admin' ? 'bg-rose-950/40' : role === 'seller' ? 'bg-emerald-950/40' : 'bg-slate-950/20'}`} />
+    <div className={`min-h-screen flex flex-col lg:flex-row bg-white transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Visual Identity Side */}
+      <div className="hidden lg:flex relative w-1/2 overflow-hidden bg-slate-900 group">
+        <div className={`absolute inset-0 z-10 transition-colors duration-1000 ${role === 'admin' ? 'bg-rose-950/50' : role === 'seller' ? 'bg-emerald-950/50' : 'bg-slate-950/20'}`} />
         <img 
-          src={activeStyle.bg}
-          className="absolute inset-0 w-full h-full object-cover transition-all duration-1000 scale-105 opacity-80"
+          src={theme.bg}
+          className="absolute inset-0 w-full h-full object-cover transition-all duration-[20s] scale-110 group-hover:scale-100 opacity-60"
           alt="Atmosphere"
         />
-        <div className="relative z-20 flex flex-col justify-between p-20 text-white w-full">
-          <div className="flex items-center gap-4">
-             <div className={`p-3 rounded-2xl ${activeStyle.primary} shadow-2xl transition-all duration-500 scale-110`}><Sparkles size={28} /></div>
-             <h1 className="text-3xl font-black tracking-tighter italic">LUXORAA</h1>
+        <div className="relative z-20 flex flex-col justify-between p-24 text-white w-full">
+          <div className="flex items-center gap-6 stagger-in">
+             <div className={`p-4 rounded-3xl ${theme.main} shadow-3xl transform transition-all duration-700 hover:rotate-12`}><Terminal size={32} /></div>
+             <h1 className="text-4xl font-black tracking-tighter italic uppercase">Luxoraa</h1>
           </div>
-          <div className="max-w-xl animate-in fade-in slide-in-from-left-8 duration-1000">
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/60 mb-8 flex items-center gap-3">
-              <Fingerprint size={14} className={activeStyle.accent} /> Secure Identity Node 0x{role.toUpperCase()}
+          
+          <div className="max-w-xl animate-in fade-in slide-in-from-left-12 duration-1000">
+            <p className="text-[10px] font-black uppercase tracking-[0.8em] text-white/40 mb-10 flex items-center gap-4">
+              <Fingerprint size={16} className={theme.accent} /> Secure Node Protocol {role.toUpperCase()}
             </p>
-            <h2 className="text-8xl font-display italic font-black leading-[0.9] mb-10">
-              Enter <br/> <span className="opacity-40 font-sans tracking-tight not-italic">The Vault.</span>
+            <h2 className="text-[8rem] font-display italic font-black leading-[0.8] mb-12">
+              The <br/> <span className="opacity-40 font-sans tracking-tighter not-italic">Identity.</span>
             </h2>
-            <p className="text-xl text-white/60 font-medium leading-relaxed italic font-display">Experience the elite vanguard of neural marketplace intelligence.</p>
+            <p className="text-2xl text-white/50 font-medium leading-relaxed italic font-display">A decentralized artifact network for the global elite vanguard.</p>
           </div>
-          <div className="flex items-center gap-10 text-[9px] font-black uppercase tracking-[0.5em] text-white/30">
-            <div className="flex items-center gap-3"><Globe size={14} /> Global Distribution</div>
-            <div className="flex items-center gap-3"><ShieldCheck size={14} /> RSA-4096 Protection</div>
+
+          <div className="flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.6em] text-white/20">
+            <div className="flex items-center gap-4"><Globe size={16} /> Distributed Ledger</div>
+            <div className="flex items-center gap-4"><ShieldCheck size={16} /> End-to-End RSA</div>
           </div>
         </div>
       </div>
 
-      {/* Form Node */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-24 relative bg-[#fcfcfd]">
-        <div className="w-full max-w-[440px] relative z-10">
-          <div className="mb-12 lg:text-left text-center">
-            <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter uppercase">
-              {isSignUp ? 'New Identity' : 'Authenticate'}
+      {/* Authentication Form Side */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-24 bg-[#fcfcfd] relative overflow-hidden">
+        {/* Abstract Background Element */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-slate-100/50 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2" />
+
+        <div className="w-full max-w-[460px] relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="mb-16 lg:text-left text-center">
+            <h3 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter uppercase">
+              {isSignUp ? 'New Node' : 'Authenticate'}
             </h3>
-            <p className="text-slate-500 font-medium text-lg italic font-display">
-              Connect to {role} control node.
+            <p className="text-slate-400 font-medium text-lg italic font-display">
+              Connect to Luxoraa {role} cluster.
             </p>
           </div>
 
           {error && (
-            <div className="mb-8 p-5 bg-rose-50 border border-rose-100 rounded-[24px] flex items-center gap-4 text-rose-600 animate-in shake duration-500">
-               {/* Fixed: ShieldAlert is now imported from lucide-react */}
-               <ShieldAlert size={20} className="shrink-0" />
-               <p className="text-xs font-black uppercase tracking-widest">{error}</p>
+            <div className="mb-10 p-6 bg-rose-50 border border-rose-100 rounded-[32px] flex items-center gap-5 text-rose-600 animate-in shake">
+               <ShieldX size={24} className="shrink-0" />
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">{error}</p>
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); handleAuth(role, email); }} className="space-y-6">
+          <form onSubmit={handleAuth} className="space-y-8">
             {isSignUp && (
-              <div className="space-y-2 stagger-in">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Full Identity</label>
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-3">Full Identity Name</label>
                 <div className="relative group">
-                  <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={18} />
-                  <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Alex Rivera" className="w-full bg-white border border-slate-100 rounded-[24px] py-5 pl-14 pr-4 text-slate-900 outline-none focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
+                  <UserIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={20} />
+                  <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Alexander Rivera" className="w-full bg-white border border-slate-100 rounded-[28px] py-5 pl-16 pr-6 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
                 </div>
               </div>
             )}
             
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Endpoint Address</label>
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-3">Node Address (Email)</label>
               <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={18} />
-                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="alex@luxoraa.com" className="w-full bg-white border border-slate-100 rounded-[24px] py-5 pl-14 pr-4 text-slate-900 outline-none focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
+                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={20} />
+                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="identity@luxoraa.com" className="w-full bg-white border border-slate-100 rounded-[28px] py-5 pl-16 pr-6 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center px-2">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Secret Passphrase</label>
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center px-4">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Secret Passphrase</label>
                  {!isSignUp && <button type="button" className="text-[10px] font-black text-indigo-600 hover:text-indigo-900 uppercase tracking-widest transition-colors">Recover</button>}
               </div>
               <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={18} />
-                <input required type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-100 rounded-[24px] py-5 pl-14 pr-14 text-slate-900 outline-none focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-900 transition-colors p-1">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={20} />
+                <input required type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-white border border-slate-100 rounded-[28px] py-5 pl-16 pr-16 text-slate-900 outline-none focus:ring-[12px] focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-900 transition-colors p-2">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
               </div>
             </div>
 
-            <button type="submit" disabled={isLoading} className={`w-full py-6 rounded-[28px] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 transition-all shadow-2xl active:scale-[0.98] text-white ${isLoading ? 'bg-slate-200' : activeStyle.primary}`}>
-              {isLoading ? <Loader2 className="animate-spin" size={24} /> : <>{isSignUp ? 'Create Node' : 'Initialize Node'} <ArrowRight size={20} /></>}
+            <button 
+              type="submit" 
+              disabled={isLoading} 
+              className={`w-full py-7 rounded-[32px] font-black text-sm uppercase tracking-[0.6em] flex items-center justify-center gap-6 transition-all shadow-3xl active:scale-[0.98] text-white ${isLoading ? 'bg-slate-200 cursor-wait' : `${theme.main} hover:scale-[1.02] ${theme.glow}`}`}
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-4">
+                  <Loader2 className="animate-spin" size={24} />
+                  <span>Verifying Node...</span>
+                </div>
+              ) : (
+                <>
+                  {isSignUp ? 'Request Access' : 'Initialize Node'} 
+                  <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="mt-12 text-center">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              {isSignUp ? 'Already Identified?' : 'New Node?'} 
-              <button onClick={() => { setIsSignUp(!isSignUp); setRole('customer'); setError(null); }} className="text-slate-900 font-black ml-3 hover:underline">
-                {isSignUp ? 'Authorize' : 'Request Access'}
+          <div className="mt-16 text-center">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
+              {isSignUp ? 'Already have an endpoint?' : 'Need node authorization?'} 
+              <button onClick={() => { setIsSignUp(!isSignUp); setError(null); }} className="text-slate-900 font-black ml-4 hover:underline">
+                {isSignUp ? 'Authenticate' : 'Register Now'}
               </button>
             </p>
           </div>
 
-          {/* Role Switching Terminal */}
-          <div className="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center gap-8">
-             <div className="flex gap-4 p-2 bg-slate-50 rounded-[24px] border border-slate-100">
+          {/* Persistent Control Hub */}
+          <div className="mt-24 pt-12 border-t border-slate-100 flex flex-col items-center gap-10">
+             <div className="flex gap-4 p-2.5 bg-slate-100/50 rounded-[32px] border border-slate-100 backdrop-blur-sm shadow-inner">
                 {[
-                  { id: 'customer', label: 'Market', icon: ShoppingBag, color: 'indigo' },
+                  { id: 'customer', label: 'Store', icon: ShoppingBag, color: 'indigo' },
                   { id: 'seller', label: 'Merchant', icon: Store, color: 'emerald' },
                   { id: 'admin', label: 'Root Ops', icon: ShieldCheck, color: 'rose' }
                 ].map((r) => (
                   <button 
                     key={r.id} 
                     onClick={() => { setRole(r.id as any); setIsSignUp(false); setError(null); }} 
-                    className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${role === r.id ? `bg-white text-${r.color}-600 shadow-xl scale-105` : 'text-slate-400 hover:text-slate-900'}`}
+                    className={`px-8 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 ${role === r.id ? `bg-white text-slate-900 shadow-2xl scale-110 z-10` : 'text-slate-400 hover:text-slate-900'}`}
                   >
-                    <r.icon size={14} /> {r.label}
+                    <r.icon size={16} /> {r.label}
                   </button>
                 ))}
              </div>
-             <div className="flex items-center gap-4 opacity-20">
-                <Key size={14} />
-                <span className="text-[9px] font-black uppercase tracking-[0.6em]">System Protocol LUX-v2.0.5</span>
+             <div className="flex items-center gap-6 opacity-20">
+                <Key size={16} />
+                <span className="text-[10px] font-black uppercase tracking-[1em]">Luxoraa System 2025 v3.0</span>
              </div>
           </div>
         </div>
