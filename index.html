@@ -10,8 +10,10 @@
   <style>
     :root {
       --lux-gold: #D4AF37;
-      --lux-bg: #F8F7F4;
-      --lux-dark: #0F172A;
+      --lux-gold-light: #F1E5AC;
+      --lux-obsidian: #0A0908;
+      --lux-dark-tan: #C2A476;
+      --lux-bg: #FDFCFB;
     }
     
     * {
@@ -20,18 +22,18 @@
 
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
-      background-color: var(--lux-bg);
-      color: var(--lux-dark);
+      background-color: var(--lux-obsidian);
+      color: white;
       overflow-x: hidden;
     }
 
     .font-display { font-family: 'Playfair Display', serif; }
 
-    /* Custom Cursor Replacement - Minimalist Dot */
+    /* Custom Cursor Replacement - Luxury Gold Dot */
     #custom-cursor {
       width: 8px;
       height: 8px;
-      background: var(--lux-dark);
+      background: var(--lux-gold);
       border-radius: 50%;
       position: fixed;
       pointer-events: none;
@@ -42,20 +44,34 @@
     
     .cursor-hover #custom-cursor {
       transform: translate(-50%, -50%) scale(6);
-      background: rgba(15, 23, 42, 0.05);
-      border: 1px solid rgba(15, 23, 42, 0.1);
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.3);
     }
 
-    /* Glassmorphism Refined */
-    .glass { 
-      background: rgba(255, 255, 255, 0.7); 
+    /* Gold Gradient Buttons */
+    .btn-gold {
+      background: linear-gradient(135deg, #D4AF37 0%, #C2A476 100%);
+      color: #0A0908;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      transition: all 0.5s ease;
+    }
+    .btn-gold:hover {
+      box-shadow: 0 10px 30px -5px rgba(212, 175, 55, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Glassmorphism Refined for Dark UI */
+    .glass-dark { 
+      background: rgba(10, 9, 8, 0.7); 
       backdrop-filter: blur(20px) saturate(160%); 
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     /* Luxury Animations */
     @keyframes luxReveal {
-      from { opacity: 0; transform: translateY(40px); }
+      from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-lux { animation: luxReveal 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
@@ -65,20 +81,20 @@
 
     /* Luxury Scrollbar */
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: var(--lux-bg); }
-    ::-webkit-scrollbar-thumb { background: #E2E2E2; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--lux-dark); }
+    ::-webkit-scrollbar-track { background: var(--lux-obsidian); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--lux-gold); }
 
-    /* Image Zoom Interaction */
-    .zoom-container {
-      overflow: hidden;
+    .sepia-overlay {
       position: relative;
     }
-    .zoom-image {
-      transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-    .zoom-container:hover .zoom-image {
-      transform: scale(1.1);
+    .sepia-overlay::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 9, 8, 0.3);
+      mix-blend-mode: multiply;
+      pointer-events: none;
     }
   </style>
 <script type="importmap">
@@ -98,7 +114,6 @@
 <body>
   <div id="custom-cursor"></div>
   <div id="root"></div>
-  
   <script type="module" src="/index.tsx"></script>
   <script>
     const cursor = document.getElementById('custom-cursor');
@@ -106,13 +121,11 @@
       cursor.style.left = e.clientX + 'px';
       cursor.style.top = e.clientY + 'px';
     });
-
     document.addEventListener('mouseover', e => {
       if (e.target.closest('button, a, .cursor-pointer')) {
         document.body.classList.add('cursor-hover');
       }
     });
-
     document.addEventListener('mouseout', e => {
       if (e.target.closest('button, a, .cursor-pointer')) {
         document.body.classList.remove('cursor-hover');

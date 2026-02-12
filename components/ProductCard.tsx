@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, ShoppingCart, Heart, Plus, Eye, Trophy, ArrowUpRight } from 'lucide-react';
+import { Star, Plus, Eye, Trophy, Heart } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -17,82 +17,54 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart, 
   onViewDetails, 
   onToggleWishlist,
-  isWishlisted,
-  isUserMember
+  isWishlisted
 }) => {
   return (
-    <div className="group relative flex flex-col bg-white rounded-[40px] p-2 transition-all duration-700 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-slate-50">
-      {/* Zoom Image Container */}
+    <div className="group bg-white rounded-none p-0 transition-all duration-700 hover:shadow-2xl border-none overflow-hidden">
+      {/* Image Node */}
       <div 
-        className="zoom-container relative aspect-[4/5] rounded-[34px] cursor-pointer"
+        className="relative aspect-[4/5] cursor-pointer overflow-hidden"
         onClick={() => onViewDetails(product.id)}
       >
         <img 
           src={product.images[0]} 
           alt={product.title}
-          className="zoom-image w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
         />
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
         
-        {/* Luxury Tags */}
-        <div className="absolute top-5 left-5 z-10">
-           {product.collection.includes('Elite Exclusive') && (
-             <span className="bg-slate-900 text-white text-[8px] font-black px-4 py-2 rounded-full uppercase tracking-widest flex items-center gap-1 shadow-lg">
-               <Trophy size={10} className="text-[#D4AF37]" /> Elite Selection
-             </span>
-           )}
-        </div>
-
-        {/* Hover Quick Actions */}
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center gap-4">
-           <button 
-             onClick={(e) => { e.stopPropagation(); onAddToCart(product.id); }}
-             className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-2xl hover:bg-slate-900 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500"
-           >
-             <Plus size={20} />
-           </button>
-           <button 
-             onClick={(e) => { e.stopPropagation(); onViewDetails(product.id); }}
-             className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-2xl hover:bg-slate-900 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75"
-           >
-             <Eye size={20} />
-           </button>
-        </div>
-
-        {/* Wishlist Toggle */}
+        {/* Floating Icons */}
         <button 
           onClick={(e) => { e.stopPropagation(); onToggleWishlist(product.id); }}
-          className={`absolute top-5 right-5 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-rose-500 text-white scale-110 shadow-lg' : 'bg-white/80 backdrop-blur-md text-slate-900 opacity-0 group-hover:opacity-100'}`}
+          className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${isWishlisted ? 'text-[#D4AF37]' : 'text-white/60 hover:text-white'}`}
         >
           <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
         </button>
       </div>
       
-      {/* Product Info */}
-      <div className="pt-6 px-4 pb-4">
-        <div className="flex justify-between items-start mb-2">
-           <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">{product.category}</span>
-           <div className="flex items-center gap-1">
-             <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
-             <span className="text-[9px] font-bold">{product.rating}</span>
-           </div>
-        </div>
-        
-        <h3 className="text-xl font-display italic font-black text-slate-900 mb-6 tracking-tighter leading-none truncate">
-          {product.title}
-        </h3>
-        
-        <div className="flex items-end justify-between border-t border-slate-50 pt-4">
-          <div>
-             <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">Standard Rate</p>
-             <p className="text-2xl font-black text-slate-900 tracking-tighter">₹{product.price.toLocaleString()}</p>
+      {/* Content */}
+      <div className="p-6 bg-white">
+        <h3 className="text-lg font-black text-slate-900 mb-1 tracking-tight font-display">{product.title}</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <p className="text-xl font-black text-slate-900">₹{product.price.toLocaleString()}</p>
+          <div className="flex items-center gap-1">
+            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
+            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
+            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
+            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
           </div>
-          {isUserMember && product.membershipPrice && (
-            <div className="text-right">
-              <p className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest mb-1 flex items-center gap-1 justify-end">Elite Sync</p>
-              <p className="text-2xl font-black text-[#D4AF37] tracking-tighter">₹{product.membershipPrice.toLocaleString()}</p>
-            </div>
-          )}
-          <ArrowUpRight size={20} className="text-slate-200 group-hover:text-slate-900 transition-colors" />
+        </div>
+
+        <div className="flex gap-2">
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-300 border border-slate-100 px-3 py-2">
+            10% Off
+          </div>
+          <button 
+            onClick={() => onAddToCart(product.id)}
+            className="flex-1 btn-gold py-3 text-[9px] rounded-none hover:opacity-90"
+          >
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
