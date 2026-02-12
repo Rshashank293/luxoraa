@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, ShoppingCart, Heart, ArrowUpRight, Plus, Eye, Trophy, Zap } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Plus, Eye, Trophy, ArrowUpRight } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -20,86 +20,79 @@ const ProductCard: React.FC<ProductCardProps> = ({
   isWishlisted,
   isUserMember
 }) => {
-  const isEliteProduct = product.collection.includes('Elite Exclusive');
-
   return (
-    <div className="group relative flex flex-col bg-white rounded-[40px] sm:rounded-[48px] p-3 sm:p-4 transition-all duration-700 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-slate-50">
+    <div className="group relative flex flex-col bg-white rounded-[40px] p-2 transition-all duration-700 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-slate-50">
+      {/* Zoom Image Container */}
       <div 
-        className="relative aspect-[4/5] rounded-[32px] sm:rounded-[40px] overflow-hidden bg-slate-100 cursor-pointer"
+        className="zoom-container relative aspect-[4/5] rounded-[34px] cursor-pointer"
         onClick={() => onViewDetails(product.id)}
       >
         <img 
           src={product.images[0]} 
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+          className="zoom-image w-full h-full object-cover"
         />
         
-        {/* FANDOM TAG */}
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex flex-col gap-2">
-           <span className="bg-slate-950/80 backdrop-blur-md text-white text-[8px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-xl">{product.theme}</span>
-           {isEliteProduct && (
-             <span className="bg-amber-400 text-slate-950 text-[8px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-xl flex items-center gap-1"><Trophy size={10} /> Elite</span>
+        {/* Luxury Tags */}
+        <div className="absolute top-5 left-5 z-10">
+           {product.collection.includes('Elite Exclusive') && (
+             <span className="bg-slate-900 text-white text-[8px] font-black px-4 py-2 rounded-full uppercase tracking-widest flex items-center gap-1 shadow-lg">
+               <Trophy size={10} className="text-[#D4AF37]" /> Elite Selection
+             </span>
            )}
         </div>
 
-        <div className="absolute top-5 right-5 flex flex-col gap-3 lg:translate-x-12 lg:opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onToggleWishlist(product.id); }}
-            className={`p-3 sm:p-4 rounded-[18px] sm:rounded-3xl shadow-2xl transition-all ${isWishlisted ? 'bg-rose-500 text-white' : 'glass text-slate-900 hover:bg-white'}`}
-          >
-            <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
-          </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onAddToCart(product.id); }}
-            className="p-3 sm:p-4 rounded-[18px] sm:rounded-3xl glass shadow-2xl transition-all hover:bg-slate-900 hover:text-white"
-          >
-            <Plus size={18} />
-          </button>
+        {/* Hover Quick Actions */}
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center gap-4">
+           <button 
+             onClick={(e) => { e.stopPropagation(); onAddToCart(product.id); }}
+             className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-2xl hover:bg-slate-900 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500"
+           >
+             <Plus size={20} />
+           </button>
+           <button 
+             onClick={(e) => { e.stopPropagation(); onViewDetails(product.id); }}
+             className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-2xl hover:bg-slate-900 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75"
+           >
+             <Eye size={20} />
+           </button>
         </div>
 
-        <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end lg:opacity-0 group-hover:opacity-100 transition-all">
-           <div className="glass px-3 py-1.5 rounded-2xl flex items-center gap-2">
-              <Star size={10} className="fill-slate-900" />
-              <span className="text-[9px] font-black tracking-widest">{product.rating}</span>
-           </div>
-           <div className="bg-slate-900 text-white p-3 sm:p-4 rounded-[20px] sm:rounded-3xl shadow-xl">
-              <Eye size={20} />
-           </div>
-        </div>
+        {/* Wishlist Toggle */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); onToggleWishlist(product.id); }}
+          className={`absolute top-5 right-5 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-rose-500 text-white scale-110 shadow-lg' : 'bg-white/80 backdrop-blur-md text-slate-900 opacity-0 group-hover:opacity-100'}`}
+        >
+          <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
+        </button>
       </div>
       
-      <div className="pt-6 sm:pt-8 px-2 sm:px-4 pb-4 flex-1 flex flex-col">
-        <div className="flex items-center gap-3 mb-3 sm:mb-4">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">{product.category}</span>
+      {/* Product Info */}
+      <div className="pt-6 px-4 pb-4">
+        <div className="flex justify-between items-start mb-2">
+           <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">{product.category}</span>
+           <div className="flex items-center gap-1">
+             <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
+             <span className="text-[9px] font-bold">{product.rating}</span>
+           </div>
         </div>
         
-        <h3 className="text-xl sm:text-2xl font-display italic font-black text-slate-900 mb-4 sm:mb-6 tracking-tighter leading-none group-hover:text-rose-600 transition-colors line-clamp-2">
+        <h3 className="text-xl font-display italic font-black text-slate-900 mb-6 tracking-tighter leading-none truncate">
           {product.title}
         </h3>
         
-        <div className="mt-auto border-t border-slate-50 pt-4 sm:pt-6">
-          <div className="flex items-end justify-between">
-             <div>
-                <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] mb-1">Standard</p>
-                <p className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tighter">₹{product.price.toLocaleString()}</p>
-             </div>
-             {product.membershipPrice && (
-                <div className="text-right">
-                   <p className={`text-[8px] font-black uppercase tracking-[0.4em] mb-1 flex items-center gap-1 justify-end ${isUserMember ? 'text-amber-500' : 'text-slate-400'}`}>
-                     <Trophy size={10} /> Elite
-                   </p>
-                   <p className={`text-2xl sm:text-3xl font-black tracking-tighter ${isUserMember ? 'text-amber-500' : 'text-slate-300 line-through'}`}>
-                     ₹{product.membershipPrice.toLocaleString()}
-                   </p>
-                </div>
-             )}
+        <div className="flex items-end justify-between border-t border-slate-50 pt-4">
+          <div>
+             <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">Standard Rate</p>
+             <p className="text-2xl font-black text-slate-900 tracking-tighter">₹{product.price.toLocaleString()}</p>
           </div>
-          
-          {!isUserMember && product.membershipPrice && (
-            <div className="mt-4 p-2.5 bg-amber-50 rounded-2xl border border-amber-100 flex items-center justify-center gap-2 text-[8px] font-black text-amber-600 uppercase tracking-widest">
-              <Zap size={10} /> Save ₹{(product.price - product.membershipPrice).toLocaleString()} with Elite
+          {isUserMember && product.membershipPrice && (
+            <div className="text-right">
+              <p className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest mb-1 flex items-center gap-1 justify-end">Elite Sync</p>
+              <p className="text-2xl font-black text-[#D4AF37] tracking-tighter">₹{product.membershipPrice.toLocaleString()}</p>
             </div>
           )}
+          <ArrowUpRight size={20} className="text-slate-200 group-hover:text-slate-900 transition-colors" />
         </div>
       </div>
     </div>

@@ -4,140 +4,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Luxoraa | Premium E-Commerce Suite</title>
+  <title>Luxoraa | Elevate Your Elegance</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --indigo-primary: #4f46e5;
-      --slate-deep: #020617;
-      --accent-gold: #fbbf24;
+      --lux-gold: #D4AF37;
+      --lux-bg: #F8F7F4;
+      --lux-dark: #0F172A;
     }
     
     * {
-      cursor: none !important; /* Custom cursor implementation below */
+      cursor: default !important;
     }
 
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background-color: #fcfcfd;
-      color: #0f172a;
+      background-color: var(--lux-bg);
+      color: var(--lux-dark);
       overflow-x: hidden;
     }
 
     .font-display { font-family: 'Playfair Display', serif; }
 
-    /* Custom Cursor */
+    /* Custom Cursor Replacement - Minimalist Dot */
     #custom-cursor {
-      width: 20px;
-      height: 20px;
-      background: rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      width: 8px;
+      height: 8px;
+      background: var(--lux-dark);
       border-radius: 50%;
       position: fixed;
       pointer-events: none;
       z-index: 9999;
-      transition: transform 0.1s ease-out, background 0.3s ease, width 0.3s ease, height 0.3s ease;
+      transition: transform 0.2s cubic-bezier(0.19, 1, 0.22, 1);
       transform: translate(-50%, -50%);
     }
     
     .cursor-hover #custom-cursor {
-      transform: translate(-50%, -50%) scale(4);
-      background: rgba(79, 70, 229, 0.05);
-      border-color: rgba(79, 70, 229, 0.2);
+      transform: translate(-50%, -50%) scale(6);
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.1);
     }
 
-    /* Glassmorphism */
+    /* Glassmorphism Refined */
     .glass { 
-      background: rgba(255, 255, 255, 0.65); 
-      backdrop-filter: blur(24px) saturate(180%); 
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.7); 
+      backdrop-filter: blur(20px) saturate(160%); 
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
-    .glass-dark { 
-      background: rgba(15, 23, 42, 0.8); 
-      backdrop-filter: blur(24px) saturate(180%); 
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Luxury Animations */
+    @keyframes luxReveal {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    /* Animations */
-    @keyframes reveal {
-      from { opacity: 0; transform: translateY(30px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .animate-reveal { animation: reveal 1s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+    .animate-lux { animation: luxReveal 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
     
-    .stagger-1 { animation-delay: 0.1s; }
-    .stagger-2 { animation-delay: 0.2s; }
-    .stagger-3 { animation-delay: 0.3s; }
-
     /* Smooth Scroll */
     html { scroll-behavior: smooth; }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { 
-      background: #cbd5e1; 
-      border-radius: 10px; 
-    }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    /* Luxury Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--lux-bg); }
+    ::-webkit-scrollbar-thumb { background: #E2E2E2; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--lux-dark); }
 
-    /* Text Selection */
-    ::selection { background: rgba(79, 70, 229, 0.1); color: #4f46e5; }
-
-    /* Hero Parallax Emulation */
-    .hero-gradient {
-      background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
-                  radial-gradient(circle at bottom left, rgba(245, 158, 11, 0.05), transparent 40%);
-    }
-
-    /* Image Hover Shine */
-    .img-shine {
-      position: relative;
+    /* Image Zoom Interaction */
+    .zoom-container {
       overflow: hidden;
+      position: relative;
     }
-    .img-shine::after {
-      content: '';
-      position: absolute;
-      top: -110%;
-      left: -210%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-      transform: rotate(30deg);
-      transition: all 0.8s;
+    .zoom-image {
+      transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
     }
-    .img-shine:hover::after {
-      top: -30%;
-      left: -30%;
+    .zoom-container:hover .zoom-image {
+      transform: scale(1.1);
     }
   </style>
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4"
   }
 }
 </script>
 </head>
-<body class="selection:bg-indigo-600/10 selection:text-indigo-600">
+<body>
   <div id="custom-cursor"></div>
   <div id="root"></div>
   
   <script type="module" src="/index.tsx"></script>
   <script>
-    // Cursor script
     const cursor = document.getElementById('custom-cursor');
     document.addEventListener('mousemove', e => {
       cursor.style.left = e.clientX + 'px';
@@ -145,13 +108,13 @@
     });
 
     document.addEventListener('mouseover', e => {
-      if (e.target.closest('button, a, input, select, .cursor-pointer')) {
+      if (e.target.closest('button, a, .cursor-pointer')) {
         document.body.classList.add('cursor-hover');
       }
     });
 
     document.addEventListener('mouseout', e => {
-      if (e.target.closest('button, a, input, select, .cursor-pointer')) {
+      if (e.target.closest('button, a, .cursor-pointer')) {
         document.body.classList.remove('cursor-hover');
       }
     });

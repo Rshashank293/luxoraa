@@ -16,6 +16,8 @@ export type Collection =
 
 export type LoyaltyTier = 'Member' | 'Silver' | 'Gold' | 'Platinum';
 
+export type AdminSubRole = 'Super Admin' | 'Ops Manager' | 'Security Lead' | 'Support Hero';
+
 export type UserStatus = 'Active' | 'Suspended' | 'Pending Verification';
 
 export interface AuditLog {
@@ -59,6 +61,7 @@ export interface User {
   name: string;
   email: string;
   role: 'customer' | 'admin' | 'seller';
+  adminRole?: AdminSubRole;
   avatar?: string;
   points: number;
   tier: LoyaltyTier;
