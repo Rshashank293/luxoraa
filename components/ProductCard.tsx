@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Star, Plus, Eye, Trophy, Heart } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -9,7 +8,6 @@ interface ProductCardProps {
   onViewDetails: (id: string) => void;
   onToggleWishlist: (id: string) => void;
   isWishlisted: boolean;
-  isUserMember?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ 
@@ -20,48 +18,42 @@ const ProductCard: React.FC<ProductCardProps> = ({
   isWishlisted
 }) => {
   return (
-    <div className="group bg-white rounded-none p-0 transition-all duration-700 hover:shadow-2xl border-none overflow-hidden">
-      {/* Image Node */}
+    <div className="group bg-white rounded-none overflow-hidden transition-all duration-700 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] flex flex-col">
       <div 
-        className="relative aspect-[4/5] cursor-pointer overflow-hidden"
+        className="relative aspect-[4/5] cursor-pointer overflow-hidden bg-slate-50"
         onClick={() => onViewDetails(product.id)}
       >
         <img 
           src={product.images[0]} 
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-        
-        {/* Floating Icons */}
         <button 
           onClick={(e) => { e.stopPropagation(); onToggleWishlist(product.id); }}
-          className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all ${isWishlisted ? 'text-[#D4AF37]' : 'text-white/60 hover:text-white'}`}
+          className={`absolute top-6 right-6 p-2 transition-all ${isWishlisted ? 'text-[#D4AF37]' : 'text-white/40 hover:text-white'}`}
         >
-          <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
+          <Heart size={20} fill={isWishlisted ? 'currentColor' : 'none'} />
         </button>
       </div>
       
-      {/* Content */}
-      <div className="p-6 bg-white">
-        <h3 className="text-lg font-black text-slate-900 mb-1 tracking-tight font-display">{product.title}</h3>
-        <div className="flex items-center gap-2 mb-4">
+      <div className="p-8 flex flex-col items-start bg-white">
+        <h3 className="text-lg font-black text-slate-900 mb-2 tracking-tight font-display">{product.title}</h3>
+        <div className="flex items-center gap-3 mb-6">
           <p className="text-xl font-black text-slate-900">₹{product.price.toLocaleString()}</p>
           <div className="flex items-center gap-1">
-            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
-            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
-            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
-            <Star size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
+            {[...Array(4)].map((_, i) => (
+              <Star key={i} size={10} className="fill-[#D4AF37] text-[#D4AF37]" />
+            ))}
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <div className="text-[10px] font-black uppercase tracking-widest text-slate-300 border border-slate-100 px-3 py-2">
+        <div className="w-full flex gap-2">
+          <div className="px-4 py-3 border border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
             10% Off
           </div>
           <button 
             onClick={() => onAddToCart(product.id)}
-            className="flex-1 btn-gold py-3 text-[9px] rounded-none hover:opacity-90"
+            className="flex-1 btn-gold py-3 text-[9px] rounded-none"
           >
             Add to Cart
           </button>
